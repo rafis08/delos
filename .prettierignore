@@ -1,0 +1,7 @@
+AGENTS.md
+sources/
+node_modules/
+dist/
+.expo/
+package-lock.json
+supabase/migrations/*.sql

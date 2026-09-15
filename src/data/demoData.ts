@@ -1,0 +1,190 @@
+import { Conversation, Message, MusicianProfile, NotificationItem } from '@/types';
+
+const people = [
+  ['Maya Chen', 27, 'Drums', 'Alternative Rock', 'St. Vincent'],
+  ['Jon Bell', 31, 'Bass', 'Indie', 'Radiohead'],
+  ['Nia Brooks', 25, 'Vocals', 'Neo-soul', 'Hiatus Kaiyote'],
+  ['Theo Grant', 34, 'Keys', 'Jazz', 'Herbie Hancock'],
+  ['Sam Rivera', 29, 'Guitar', 'Punk', 'IDLES'],
+  ['Iris Okafor', 26, 'Producer', 'Electronic', 'Jamie xx'],
+  ['Cal Morgan', 38, 'Saxophone', 'Funk', 'Maceo Parker'],
+  ['Zoe Patel', 23, 'Violin', 'Folk', 'Andrew Bird'],
+  ['Andre Lewis', 32, 'Drums', 'R&B', 'D’Angelo'],
+  ['Lena Park', 28, 'Bass', 'Pop', 'HAIM'],
+  ['Miles Ward', 35, 'Vocals', 'Metal', 'Deftones'],
+  ['June Ellis', 30, 'Keys', 'Alternative Rock', 'Japanese Breakfast'],
+  ['Dani Flores', 24, 'Guitar', 'Indie', 'Alvvays'],
+  ['Owen Price', 41, 'Drums', 'Blues', 'Gary Clark Jr.'],
+  ['Keisha Hall', 33, 'Vocals', 'Hip-hop', 'Little Simz'],
+  ['Eli Rosen', 27, 'Bass', 'Electronic', 'Caribou'],
+  ['Rae Thompson', 36, 'Guitar', 'Americana', 'Jason Isbell'],
+  ['Noah Kim', 22, 'Producer', 'Pop', 'Charli xcx'],
+  ['Amina Cole', 29, 'Drums', 'Neo-soul', 'Yussef Dayes'],
+  ['Benji Stone', 31, 'Keys', 'Funk', 'Vulfpeck'],
+] as const;
+const colors = ['#E96B16', '#F2B134', '#C85813', '#F59E0B', '#9A5B13'];
+
+export const demoUser: MusicianProfile = {
+  id: 'me',
+  displayName: 'Alex Rivers',
+  age: 28,
+  location: 'Detroit, MI',
+  distanceKm: 0,
+  bio: 'Guitarist and songwriter building a committed original project with a sharp live sound.',
+  primaryInstrument: 'Guitar',
+  secondaryInstruments: ['Vocals'],
+  desiredRoles: ['Drums', 'Bass', 'Keys', 'Vocals'],
+  genres: ['Alternative Rock', 'Indie'],
+  influences: ['St. Vincent', 'The National'],
+  skill: 'Advanced',
+  yearsExperience: 10,
+  commitment: 'Serious',
+  goals: ['Form a band', 'Paid gigs'],
+  material: 'Originals',
+  availability: [
+    { day: 'Tue', periods: ['Evening'] },
+    { day: 'Sat', periods: ['Afternoon'] },
+  ],
+  rehearsalFrequency: 'Weekly',
+  travelRadiusKm: 50,
+  transportation: true,
+  performanceReadyGear: true,
+  links: [],
+  verifiedEmail: true,
+  lastActive: 'Active now',
+  availableNow: true,
+  heroColor: '#F2B134',
+  initials: 'AR',
+  media: [{ id: 'demo-user-audio', type: 'audio', title: 'Live room take · 0:42' }],
+};
+
+export const demoProfiles: MusicianProfile[] = people.map(
+  ([name, age, instrument, genre, influence], index) => ({
+    id: `demo-${index + 1}`,
+    displayName: name,
+    age,
+    location: index % 3 === 0 ? 'Ferndale, MI' : index % 3 === 1 ? 'Detroit, MI' : 'Hamtramck, MI',
+    distanceKm: 3 + index * 2,
+    bio: `${instrument} player looking for grounded collaborators, strong arrangements, and a live set worth leaving the house for.`,
+    primaryInstrument: instrument,
+    secondaryInstruments: index % 4 === 0 ? ['Vocals'] : [],
+    desiredRoles: ['Guitar', index % 2 ? 'Drums' : 'Bass'],
+    genres: [...new Set([genre, index % 2 ? 'Indie' : 'Alternative Rock'])],
+    influences: [...new Set([influence, index % 2 ? 'Talking Heads' : 'St. Vincent'])],
+    skill: index % 5 === 0 ? 'Professional' : index % 3 === 0 ? 'Intermediate' : 'Advanced',
+    yearsExperience: 4 + index,
+    commitment: index % 4 === 0 ? 'Professional' : index % 3 === 0 ? 'Consistent' : 'Serious',
+    goals: index % 3 === 0 ? ['Paid gigs', 'Session work'] : ['Form a band', 'Paid gigs'],
+    material: index % 3 === 0 ? 'Both' : 'Originals',
+    availability: [
+      { day: index % 2 ? 'Tue' : 'Sat', periods: [index % 2 ? 'Evening' : 'Afternoon'] },
+    ],
+    rehearsalFrequency: 'Weekly',
+    travelRadiusKm: 40 + index,
+    transportation: index % 4 !== 0,
+    performanceReadyGear: index % 3 !== 0,
+    links: [],
+    verifiedEmail: true,
+    lastActive: index < 5 ? 'Active today' : 'Active this week',
+    availableNow: index < 3,
+    heroColor: colors[index % colors.length]!,
+    initials: name
+      .split(' ')
+      .map((part) => part[0])
+      .join(''),
+    media: [
+      {
+        id: `sample-${index}`,
+        type: index % 4 === 0 ? 'video' : 'audio',
+        title: index % 4 === 0 ? 'Warehouse session · 0:58' : 'Live rehearsal · 0:36',
+      },
+    ],
+  }),
+);
+
+export const demoConversations: Conversation[] = [
+  {
+    id: 'demo-chat-1',
+    profileId: 'demo-1',
+    displayName: 'Maya Chen',
+    initials: 'MC',
+    heroColor: '#E96B16',
+    lastMessage: 'Tuesday night works. Want to pick three songs?',
+    updatedAt: '10m',
+    unread: 1,
+  },
+  {
+    id: 'demo-chat-2',
+    profileId: 'demo-2',
+    displayName: 'Jon Bell',
+    initials: 'JB',
+    heroColor: '#F2B134',
+    lastMessage: 'That chorus has serious potential.',
+    updatedAt: 'Yesterday',
+    unread: 0,
+  },
+];
+export const demoMessages: Record<string, Message[]> = {
+  'demo-chat-1': [
+    {
+      id: 'm1',
+      conversationId: 'demo-chat-1',
+      senderId: 'demo-1',
+      body: 'Your live clip sounds great. Want to try a room together?',
+      createdAt: '9:41 AM',
+      status: 'read',
+    },
+    {
+      id: 'm2',
+      conversationId: 'demo-chat-1',
+      senderId: 'me',
+      body: 'Absolutely. I’m free Tuesday evening.',
+      createdAt: '9:45 AM',
+      status: 'read',
+    },
+    {
+      id: 'm3',
+      conversationId: 'demo-chat-1',
+      senderId: 'demo-1',
+      body: 'Tuesday night works. Want to pick three songs?',
+      createdAt: '10:02 AM',
+      status: 'sent',
+    },
+  ],
+  'demo-chat-2': [
+    {
+      id: 'm4',
+      conversationId: 'demo-chat-2',
+      senderId: 'demo-2',
+      body: 'That chorus has serious potential.',
+      createdAt: 'Yesterday',
+      status: 'read',
+    },
+  ],
+};
+export const demoNotifications: NotificationItem[] = [
+  {
+    id: 'n1',
+    type: 'match',
+    title: 'You matched with Maya',
+    body: 'Your schedules and goals line up.',
+    time: '10 minutes ago',
+    read: false,
+  },
+  {
+    id: 'n2',
+    type: 'message',
+    title: 'New message from Jon',
+    body: 'That chorus has serious potential.',
+    time: 'Yesterday',
+    read: true,
+  },
+  {
+    id: 'n3',
+    type: 'session',
+    title: 'Rehearsal proposal',
+    body: 'Maya proposed Tuesday at 7:00 PM.',
+    time: 'Yesterday',
+    read: true,
+  },
+];
