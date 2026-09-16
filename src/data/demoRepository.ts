@@ -226,10 +226,15 @@ export class DemoRepository {
   }
   async report() {}
   async deleteAccount() {}
-  async uploadMedia(_profileId: string, _uri: string, _mimeType: string, title: string) {
+  async uploadMedia(_profileId: string, uri: string, mimeType: string, title: string) {
+    const type = mimeType.startsWith('image/')
+      ? 'image'
+      : mimeType.startsWith('audio/')
+        ? 'audio'
+        : 'video';
     this.profile = {
       ...this.profile,
-      media: [...this.profile.media, { id: `demo-media-${Date.now()}`, type: 'audio', title }],
+      media: [...this.profile.media, { id: `demo-media-${Date.now()}`, type, title, uri }],
     };
   }
   async listNotifications() {

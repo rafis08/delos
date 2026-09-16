@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, Chips, Field, Header, Screen } from '@/components/ui';
 import { createBlankProfile } from '@/data/blankProfile';
-import { profileSchema } from '@/domain/validation';
+import { profileBasicsSchema } from '@/domain/validation';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { Commitment, Goal } from '@/types';
@@ -49,7 +49,7 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const next = () => {
     if (step === 0) {
-      const v = profileSchema.safeParse(p);
+      const v = profileBasicsSchema.safeParse(p);
       if (!v.success) {
         setError(v.error.issues[0]?.message || 'Complete each field');
         return;

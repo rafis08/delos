@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { AudioSamplePlayer } from '@/components/AudioSamplePlayer';
 import { Button, Chip, Header, IconButton, Screen, StateView } from '@/components/ui';
 import { repository } from '@/data/repository';
 import { calculateCompatibility } from '@/domain/compatibility';
@@ -49,7 +49,7 @@ export default function FullProfile() {
     );
   const p = remote;
   const photo = p.media.find((item) => item.type === 'image' && item.uri);
-  const performance = p.media.find((item) => item.type !== 'image');
+  const performances = p.media.filter((item) => item.type !== 'image');
   const c = calculateCompatibility(profile, p);
   return (
     <Screen>
@@ -96,10 +96,16 @@ export default function FullProfile() {
         <Text style={styles.initials}>{p.initials}</Text>
       </View>
       <Text style={styles.role}>
-        {p.primaryInstrument} · {p.skill} · {p.distanceKm} km
+        {p.primaryInstrument} · {p.skill} · {p.location} · {p.distanceKm} km
       </Text>
       <Text style={styles.explain}>{c.explanation}</Text>
       <TrustSignals profile={p} />
+      {id === 'me' && (
+        <View style={styles.ownerActions}>
+          <Button label="Edit profile" onPress={() => router.push('/edit-profile')} />
+          <Button label="Manage media" variant="secondary" onPress={() => router.push('/media')} />
+        </View>
+      )}
       <Section title="Your chemistry">
         <CompatibilityBars factors={c.factors} />
       </Section>
@@ -111,6 +117,9 @@ export default function FullProfile() {
           ))}
         </View>
         <Text style={styles.muted}>Influenced by {p.influences.join(', ')}</Text>
+        {!!p.secondaryInstruments.length && (
+          <Text style={styles.muted}>Also plays {p.secondaryInstruments.join(', ')}</Text>
+        )}
       </Section>
       <Section title="Looking for">
         <View style={styles.chips}>
@@ -130,23 +139,45 @@ export default function FullProfile() {
           {p.rehearsalFrequency} · Travels {p.travelRadiusKm} km
         </Text>
       </Section>
-      {performance && (
+      {!!performances.length && (
         <Section title="Performance">
-          <Pressable
-            accessibilityRole="button"
-            disabled={!performance.uri}
-            onPress={() => performance.uri && Linking.openURL(performance.uri)}
-            style={styles.sample}
-          >
-            <Ionicons name="play" size={26} color={colors.accentInk} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.sampleTitle}>{performance.title}</Text>
-              <Text style={styles.sampleMeta}>
-                {performance.type.toUpperCase()} · {performance.duration || 'PERFORMANCE SAMPLE'}
-              </Text>
-            </View>
-            <View style={styles.wave} />
-          </Pressable>
+          {performances.map((performance) =>
+            performance.type === 'audio' ? (
+              <AudioSamplePlayer
+                key={performance.id}
+                uri={performance.uri}
+                title={performance.title}
+              />
+            ) : (
+              <Pressable
+                key={performance.id}
+                accessibilityRole="button"
+                disabled={!performance.uri}
+                onPress={() => performance.uri && Linking.openURL(performance.uri)}
+                style={styles.sample}
+              >
+                <Ionicons name="play" size={26} color={colors.accentInk} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sampleTitle}>{performance.title}</Text>
+                  <Text style={styles.sampleMeta}>VIDEO · OPEN PERFORMANCE</Text>
+                </View>
+              </Pressable>
+            ),
+          )}
+        </Section>
+      )}
+      {(p.existingBand || p.links.length > 0) && (
+        <Section title="Projects & links">
+          {!!p.existingBand && <Text style={styles.text}>Current project: {p.existingBand}</Text>}
+          {p.links.map((link) => (
+            <Pressable
+              accessibilityRole="link"
+              key={`${link.label}-${link.url}`}
+              onPress={() => Linking.openURL(link.url)}
+            >
+              <Text style={styles.link}>{link.label} ↗</Text>
+            </Pressable>
+          ))}
         </Section>
       )}
       <View style={styles.facts}>
@@ -234,6 +265,8 @@ function CompatibilityBars({ factors }: { factors: Record<string, number> }) {
 }
 const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', gap: 6 },
+  ownerActions: { gap: 8 },
+  link: { color: '#8B5000', fontWeight: '800', paddingVertical: 5 },
   bars: { gap: 9 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   barLabel: { color: colors.text, width: 82, fontSize: 12, fontWeight: '700' },

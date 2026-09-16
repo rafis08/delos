@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Header, Screen } from '@/components/ui';
+import { AudioSamplePlayer } from '@/components/AudioSamplePlayer';
 import { PremiumPrompt } from '@/components/PremiumPrompt';
 import { repository } from '@/data/repository';
 import { mediaRules } from '@/domain/validation';
@@ -106,8 +107,14 @@ export default function MediaManager() {
       {!!error && <Text style={styles.error}>{error}</Text>}
       {items.map((item) => (
         <View key={item.id} style={styles.item}>
-          <Text style={styles.type}>{item.type.toUpperCase()}</Text>
-          <Text style={styles.title}>{item.title}</Text>
+          <View style={styles.itemBody}>
+            <Text style={styles.type}>{item.type.toUpperCase()}</Text>
+            {item.type === 'audio' ? (
+              <AudioSamplePlayer uri={item.uri} title={item.title} />
+            ) : (
+              <Text style={styles.title}>{item.title}</Text>
+            )}
+          </View>
           <Button
             label="Remove"
             variant="ghost"
@@ -128,13 +135,12 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8 },
   flex: { flex: 1 },
   item: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: space.sm,
     padding: space.md,
     borderRadius: radius.md,
     backgroundColor: colors.panel,
   },
+  itemBody: { gap: 8 },
   type: { color: colors.accent, fontWeight: '900', fontSize: 11 },
   title: { flex: 1, color: colors.text, fontWeight: '700' },
 });

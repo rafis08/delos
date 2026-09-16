@@ -63,10 +63,18 @@ function mapProfile(row: Row): MusicianProfile {
     commitment: row.commitment as MusicianProfile['commitment'],
     goals: (row.goals as MusicianProfile['goals']) || [],
     material: row.material as MusicianProfile['material'],
-    availability: rows(row.availability).map((x) => ({
-      day: days[Number(x.day_of_week)]!,
-      periods: [x.period as 'Morning' | 'Afternoon' | 'Evening'],
-    })),
+    availability: Object.values(
+      rows(row.availability).reduce<Record<string, MusicianProfile['availability'][number]>>(
+        (grouped, x) => {
+          const day = days[Number(x.day_of_week)]!;
+          const period = x.period as 'Morning' | 'Afternoon' | 'Evening';
+          grouped[day] ||= { day, periods: [] };
+          if (!grouped[day].periods.includes(period)) grouped[day].periods.push(period);
+          return grouped;
+        },
+        {},
+      ),
+    ),
     rehearsalFrequency: String(row.rehearsal_frequency || 'Weekly'),
     travelRadiusKm: Number(row.travel_radius_km || 40),
     transportation: Boolean(row.transportation),
@@ -412,7 +420,21 @@ export class SupabaseRepository implements DelosRepository {
   async uploadMedia(profileId: string, uri: string, mimeType: string, title: string) {
     const response = await fetch(uri);
     const body = await response.arrayBuffer();
-    const extension = mimeType.split('/')[1]?.replace('quicktime', 'mov') || 'bin';
+    const extension =
+      (
+        {
+          'audio/mpeg': 'mp3',
+          'audio/mp4': 'm4a',
+          'audio/x-m4a': 'm4a',
+          'audio/aac': 'aac',
+          'audio/wav': 'wav',
+          'audio/webm': 'webm',
+          'audio/ogg': 'ogg',
+          'video/quicktime': 'mov',
+        } as Record<string, string>
+      )[mimeType] ||
+      mimeType.split('/')[1] ||
+      'bin';
     const path = `${profileId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
     const { error: uploadError } = await this.client.storage
       .from('profile-media')

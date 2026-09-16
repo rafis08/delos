@@ -194,6 +194,8 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       uploadMedia: async (uri, mimeType, title) => {
         if (!userId) throw new Error('Sign in before uploading media.');
         await needRepo().uploadMedia(userId, uri, mimeType, title);
+        const updated = await needRepo().getProfile(userId);
+        if (updated) setProfile(updated);
       },
       like: async (id) => (await needRepo().like(id)).matched,
       pass: async (id) => needRepo().pass(id),
