@@ -106,7 +106,7 @@ You can edit profile and discovery settings, disable notifications through devic
 
 Depending on where you live, you may request access, correction, deletion, portability, restriction, objection, withdrawal of consent, or an appeal of a denied privacy request. You may also have rights concerning sale, sharing, targeted advertising, profiling, or sensitive data. Delos does not currently sell personal information or use it for cross-context behavioral advertising.
 
-Submit requests at `[PRIVACY EMAIL]` or `[PRIVACY CHOICES URL]`. We may verify your identity and authority. Authorized agents must provide proof of authorization. We will not discriminate against you for exercising applicable rights.
+Submit requests at `[PRIVACY EMAIL]` or `https://delosmusic.app/privacy-choices`. We may verify your identity and authority. Authorized agents must provide proof of authorization. We will not discriminate against you for exercising applicable rights.
 
 ## 8. Security
 

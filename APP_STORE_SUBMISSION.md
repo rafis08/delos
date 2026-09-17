@@ -64,10 +64,11 @@ Confirm these against the release configuration in App Store Connect:
 
 Before submission, publish HTTPS pages for:
 
-- Privacy Policy
-- Terms and Community Standards
-- Support with a monitored public email
-- Optional privacy choices/account deletion information
+- Privacy Policy: `https://delosmusic.app/privacy`
+- Terms of Use: `https://delosmusic.app/terms`
+- Community Guidelines: `https://delosmusic.app/community`
+- Support: `https://delosmusic.app/support`
+- Privacy choices/account deletion: `https://delosmusic.app/privacy-choices`
 
 Replace every beta placeholder in `PRIVACY.md`, `TERMS.md`, and `SUPPORT.md` with the operator's legal name, public support email, effective date, retention practices, subprocessors, governing law, and applicable privacy rights. The in-app Legal screen must match the published policy.
 

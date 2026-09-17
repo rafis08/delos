@@ -43,7 +43,7 @@ Delos uses Stripe only for web checkout. iOS and Android premium purchases remai
 2. In Supabase Edge Function Secrets—not Expo variables or database rows—set:
    - `STRIPE_SECRET_KEY` to a restricted Stripe test key when possible.
    - `STRIPE_PRICE_AMPLIFIED_MONTHLY=price_1UFd0l01Up5V3AGf7L5rRrHC` for the Delos sandbox account.
-   - `DELOS_WEB_URL` to the deployed web origin, such as `https://delos.example`.
+   - `DELOS_WEB_URL=https://delosmusic.app`.
 3. Deploy `create-checkout-session`, `create-customer-portal`, and `stripe-webhook`.
 4. Create a Stripe webhook endpoint for the deployed `stripe-webhook` function and subscribe to `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted`.
 5. Store that endpoint's signing secret as `STRIPE_WEBHOOK_SECRET` in Edge Function Secrets.

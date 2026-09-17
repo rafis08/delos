@@ -8,3 +8,12 @@ verify_jwt = true
 
 [functions.create-customer-portal]
 verify_jwt = true
+
+[functions.revenuecat-webhook]
+verify_jwt = false
+
+[functions.sync-revenuecat-entitlement]
+verify_jwt = true
+
+[functions.push-notifications]
+verify_jwt = false

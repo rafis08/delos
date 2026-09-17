@@ -2,8 +2,10 @@ node_modules/
 .expo/
 dist/
 dist-ios/
+dist-ios-final/
 web-build/
 coverage/
+supabase/.temp/
 .env
 .env.local
 *.log
