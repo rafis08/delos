@@ -7,7 +7,7 @@
 - **Primary category:** Music
 - **Secondary category:** Social Networking
 - **Age:** Adults 18+. Complete Apple's questionnaire accurately and override upward to 18+ because profiles, messaging, user media, and real-world meetups are central to the product.
-- **Bundle ID:** `com.delos.app` (confirm availability and ownership before the first build; it cannot be changed after upload)
+- **Bundle ID:** `com.delosmusic.app` (confirm availability and ownership before the first build; it cannot be changed after upload)
 
 ### Promotional text
 

@@ -41,13 +41,13 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.delos.app",
+      "bundleIdentifier": "com.delosmusic.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.delos.app",
+      "package": "com.delosmusic.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/delos-guardian.png",
         "backgroundColor": "#FFFFFF"
