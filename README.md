@@ -81,10 +81,10 @@ Delos also includes **Band Calls**, a project-first opportunity board where musi
 
 After matching, conversations deliberately point toward action: first-message prompts, rehearsal proposals, two-person readiness confirmation, calendar export, and a shared **Band Room** for setlists, preparation tasks, and musical notes. Profile completion is calculated from real profile data and always suggests one useful next step. The shortlist, native profile sharing, and explainable six-factor chemistry view support musicians who are not ready to decide immediately. All flows are populated in demo mode and backed by Supabase in production.
 
-Billing is intentionally an interface-level test flow. It is explicitly labeled and never claims to charge. Connect RevenueCat or platform billing behind a future `SubscriptionService` implementation.
+Billing uses the native-store adapter on iOS. Complete the RevenueCat and App Store Connect setup in `APP_STORE_SUBMISSION.md` before enabling production purchases.
 
 ## Deployment
 
-Run `eas init` once to add the EAS project ID used by push registration. Use `npm run build:preview` for internal device testing, `npm run build:production` for signed store builds, and `npm run build:web` for web. Replace the beta legal drafts with public counsel-reviewed HTTPS pages and connect real App Store billing before submission.
+The Expo project is already linked to EAS. Use `npm run build:preview` for internal device testing, `npm run build:production` for signed store builds, and `npm run build:web` for web. Resolve every item marked **BLOCKER** in `APP_STORE_SUBMISSION.md` before submission.
 
 The Expo project is linked at `@rafis08/delos`. Follow `APP_STORE_SUBMISSION.md` for Apple metadata, privacy disclosures, review notes, RevenueCat/StoreKit configuration, and the remaining release gates.

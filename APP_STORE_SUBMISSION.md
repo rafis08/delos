@@ -1,4 +1,19 @@
-# Delos App Store submission
+# Delos App Store submission readiness
+
+## Current decision: NOT READY TO SUBMIT
+
+The codebase passes its automated tests, type checking, linting, Expo diagnostics, and web export. Do not send the app to Apple until every **BLOCKER** below is resolved.
+
+- **BLOCKER — Public website:** make `https://delosmusic.app` public and connect the domain. Every legal and support URL below must load without signing in.
+- **BLOCKER — Legal contacts:** replace every bracketed email/address placeholder in `legal/`. The policies must identify AIFIXMY LLC consistently and use a monitored support address.
+- **BLOCKER — Production backend:** apply all production migrations, deploy required Edge Functions, configure authentication URLs, private storage, Realtime, push notifications, and moderation access.
+- **BLOCKER — Subscription:** create the App Store subscription, connect RevenueCat, and pass sandbox purchase, restore, expiry, cancellation, and entitlement tests.
+- **BLOCKER — Review access:** create a stable production reviewer account with populated data. Do not require a one-time code, invitation, or expired link.
+- **BLOCKER — Signed build:** produce a production iOS build and verify that its build environment uses Xcode 26 or later with the iOS 26 SDK or later.
+- **BLOCKER — Device QA:** complete the release test matrix on physical iPhones, including a clean install, permission denial, poor network, account deletion, report/block, media upload, notifications, and purchases.
+- **BLOCKER — Store assets:** capture final screenshots from the submitted build and complete privacy, age rating, content-rights, encryption, accessibility, and availability answers in App Store Connect.
+
+Recommended first release posture: iPhone only, United States storefront first, manual release after approval, and disable automatic Apple silicon Mac and Apple Vision Pro availability until those environments have been tested.
 
 ## Product metadata
 
@@ -6,7 +21,7 @@
 - **Subtitle:** Where music is born
 - **Primary category:** Music
 - **Secondary category:** Social Networking
-- **Age:** Adults 18+. Complete Apple's questionnaire accurately and override upward to 18+ because profiles, messaging, user media, and real-world meetups are central to the product.
+- **Age:** Adults 18+. Answer Apple's current questionnaire truthfully for user-generated content, messaging, mature themes, and real-world meetups, then select the higher 18+ rating where App Store Connect permits an override.
 - **Bundle ID:** `com.delosmusic.app` (confirm availability and ownership before the first build; it cannot be changed after upload)
 
 ### Promotional text
@@ -70,7 +85,33 @@ Before submission, publish HTTPS pages for:
 - Support: `https://delosmusic.app/support`
 - Privacy choices/account deletion: `https://delosmusic.app/privacy-choices`
 
-Replace every beta placeholder in `PRIVACY.md`, `TERMS.md`, and `SUPPORT.md` with the operator's legal name, public support email, effective date, retention practices, subprocessors, governing law, and applicable privacy rights. The in-app Legal screen must match the published policy.
+Replace every bracketed placeholder in `legal/` with the final monitored contact or mailing address. Verify the effective dates, retention practices, subprocessors, governing law, and applicable privacy rights. The in-app Legal screen must match these published pages.
+
+## Screenshots and product page
+
+Upload 6–8 portrait screenshots from the final production-like build. Apple accepts 1–10 screenshots; the largest required iPhone size can be used for automatic scaling. Capture at an accepted 6.9-inch resolution such as 1320×2868, without transparency.
+
+Suggested sequence:
+
+1. Welcome — “Sound is only half the match.”
+2. Discovery — explainable musician compatibility
+3. Profile — instruments, influences, schedule, and media
+4. Band Calls — find the missing member
+5. Mutual messaging — plan the first rehearsal
+6. Rehearsal proposal — move from chat to action
+7. Band Room — setlists, tasks, and notes
+8. Safety — block, report, privacy, and account controls
+
+Do not show unfinished UI, debug labels, personal data, placeholder content, Android chrome, or features unavailable in the submitted build. App previews are optional; skip video for version 1 unless a polished capture is ready.
+
+## Age rating, privacy, and accessibility
+
+- Complete every current age-rating question; do not reuse answers from an older questionnaire.
+- Declare user-generated content and unrestricted user-to-user communication accurately. Confirm whether any mature music-related content is present before answering frequency questions.
+- Use the privacy answers below only after comparing them with the exact production SDK configuration and data flows.
+- If Sentry is enabled, disclose crash and diagnostic data and confirm its linkage/use. If it remains disabled, do not declare data that is never collected.
+- Do not claim accessibility features in the Accessibility Nutrition Label until they have been tested throughout the core journey. At minimum, test VoiceOver, Dynamic Type/text resizing, sufficient contrast, reduced motion, and non-color-only status cues.
+- Delos states it does not track users across other companies' apps or sites. Revisit this answer if advertising, attribution, or tracking SDKs are added.
 
 ## Native subscription setup
 
@@ -85,6 +126,45 @@ Replace every beta placeholder in `PRIVACY.md`, `TERMS.md`, and `SUPPORT.md` wit
 9. Deploy `sync-revenuecat-entitlement` with JWT verification enabled and `revenuecat-webhook` with JWT verification disabled.
 10. Configure the RevenueCat webhook URL as `https://pfaotpeebrhmwmhadymw.supabase.co/functions/v1/revenuecat-webhook` with `Authorization: Bearer <REVENUECAT_WEBHOOK_SECRET>`.
 11. Test purchase, restore, expiration, cancellation, and cross-platform entitlement behavior with sandbox accounts.
+
+### Subscription metadata
+
+- **Group reference name:** Delos Amplified
+- **Product ID:** `delos_amplified_monthly`
+- **Reference name:** Delos Amplified Monthly
+- **Display name:** Delos Amplified
+- **Description:** More tools to find your band faster.
+- **Duration:** 1 month
+- **Review screenshot:** final paywall showing price, billing period, restore control, and Terms/Privacy links
+- **Review note:** “Delos Amplified is available from Settings and contextual upgrade prompts. On iOS it is sold only through Apple In-App Purchase. Use the supplied review account, open Settings → Delos Amplified, purchase the monthly product, then verify Restore Purchases.”
+
+For the first subscription, add the subscription to the same App Review submission as version 1.0. The subscription must be in the Ready to Submit state, with localization, price, review screenshot, and review notes complete.
+
+## App Review information
+
+Before submission, enter:
+
+- A monitored contact name, phone number, and email.
+- A non-expiring reviewer username and password in App Store Connect—not in this repository.
+- Notes describing demo mode and the production account, plus exact navigation to messaging, report/block, account deletion, subscription purchase, and restore.
+- Any test data or second account needed to exercise mutual messaging. If two accounts are required, supply both securely in Review Notes.
+- A statement that location is approximate/city-level and why location permission is requested.
+- A statement that account deletion begins in Settings and removes associated user-generated content; warn subscribed users that deleting the Delos account does not cancel their Apple subscription.
+
+Never submit a reviewer flow that depends on a developer manually approving an account during review.
+
+## Final release sequence
+
+1. Resolve all legal placeholders and publish the website/domain.
+2. Configure the production Supabase, push, moderation, RevenueCat, and StoreKit environments.
+3. Create the App Store Connect app record and subscription; finish agreements, tax, and banking.
+4. Run the physical-device QA matrix and accessibility pass.
+5. Create the signed production build and upload it to TestFlight.
+6. Run external TestFlight acceptance testing, including account deletion and StoreKit sandbox cases.
+7. Capture screenshots from that release candidate and complete all App Store Connect metadata.
+8. Attach the first subscription to the app-version submission.
+9. Recheck every URL from a signed-out browser and every reviewer credential from a clean install.
+10. Submit for review with manual release selected; release only after a final production smoke test.
 
 ## Build and upload
 

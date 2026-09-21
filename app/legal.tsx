@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { Header, Screen } from '@/components/ui';
+import { Linking, StyleSheet, Text, View } from 'react-native';
+import { Button, Header, Screen } from '@/components/ui';
 import { colors, space, type } from '@/theme';
 export default function Legal() {
   return (
@@ -17,12 +17,27 @@ export default function Legal() {
         title="Your controls"
         body="You can block or report a member from their profile, mute notifications, pause discovery visibility, and permanently delete your account."
       />
-      <Text style={styles.note}>
-        Beta summary. The counsel-reviewed public Privacy Policy and Terms URLs must be configured
-        before store submission.
-      </Text>
+      <View style={styles.links}>
+        <Button label="Privacy Policy" variant="secondary" onPress={() => openLegalPage('/privacy')} />
+        <Button label="Terms of Use" variant="secondary" onPress={() => openLegalPage('/terms')} />
+        <Button
+          label="Community Guidelines"
+          variant="secondary"
+          onPress={() => openLegalPage('/community')}
+        />
+        <Button label="Safety & meetups" variant="secondary" onPress={() => openLegalPage('/safety')} />
+        <Button label="Support" variant="secondary" onPress={() => openLegalPage('/support')} />
+        <Button
+          label="Privacy choices & account deletion"
+          variant="secondary"
+          onPress={() => openLegalPage('/privacy-choices')}
+        />
+      </View>
     </Screen>
   );
+}
+function openLegalPage(path: string) {
+  void Linking.openURL(`https://delosmusic.app${path}`);
 }
 function Section({ title, body }: { title: string; body: string }) {
   return (
@@ -41,5 +56,5 @@ const styles = StyleSheet.create({
   },
   title: { color: colors.text, ...type.h2 },
   body: { color: colors.muted, ...type.body },
-  note: { color: colors.warning, fontSize: 12 },
+  links: { gap: space.sm },
 });

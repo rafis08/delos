@@ -1,8 +1,23 @@
 import { z } from 'zod';
-export const authSchema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(8, 'Use at least 8 characters'),
+const emailSchema = z.string().trim().toLowerCase().email('Enter a valid email').max(254);
+
+export const signInSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, 'Enter your password').max(128, 'Password is too long'),
 });
+
+export const signUpSchema = z.object({
+  email: emailSchema,
+  password: z
+    .string()
+    .min(12, 'Use at least 12 characters')
+    .max(128, 'Password is too long')
+    .regex(/[a-z]/, 'Include a lowercase letter')
+    .regex(/[A-Z]/, 'Include an uppercase letter')
+    .regex(/[0-9]/, 'Include a number'),
+});
+// Backward-compatible name for callers that validate new-account credentials.
+export const authSchema = signUpSchema;
 export const profileBasicsSchema = z.object({
   displayName: z.string().trim().min(2).max(50),
   age: z.number().int().min(18, 'Delos is for adults 18+').max(100),

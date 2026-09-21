@@ -61,12 +61,17 @@ export function AppProvider({ children }: React.PropsWithChildren) {
   useEffect(() => {
     const handleAuthLink = async (url: string | null) => {
       if (!url || !supabase) return;
-      const fragment = url.includes('#') ? url.split('#')[1] : url.split('?')[1];
-      const params = new URLSearchParams(fragment || '');
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token');
-      if (accessToken && refreshToken)
-        await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      const parsed = Linking.parse(url);
+      const path = parsed.path?.replace(/^\//, '');
+      const expected = Linking.parse(Linking.createURL('/'));
+      const trustedOrigin =
+        parsed.scheme === 'delos' ||
+        (['http', 'https'].includes(parsed.scheme || '') &&
+          parsed.scheme === expected.scheme &&
+          parsed.hostname === expected.hostname);
+      if (!trustedOrigin || !['auth/signin', 'auth/update-password'].includes(path || '')) return;
+      const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : null;
+      if (code) await supabase.auth.exchangeCodeForSession(code);
     };
     void Linking.getInitialURL().then(handleAuthLink);
     const subscription = Linking.addEventListener('url', ({ url }) => void handleAuthLink(url));

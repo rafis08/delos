@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Text } from 'react-native';
 import { Button, Field, Header, Screen } from '@/components/ui';
 import { BrandLockup } from '@/components/BrandMark';
-import { authSchema } from '@/domain/validation';
+import { signInSchema } from '@/domain/validation';
 import { useApp } from '@/store/AppContext';
 import { colors } from '@/theme';
 export default function SignIn() {
@@ -13,7 +13,7 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const submit = async () => {
-    const valid = authSchema.safeParse({ email, password });
+    const valid = signInSchema.safeParse({ email, password });
     if (!valid.success) {
       setError(valid.error.issues[0]?.message || 'Check your details');
       return;
