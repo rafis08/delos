@@ -30,7 +30,7 @@ for select to authenticated using (
 create or replace function public.mark_conversation_read(target_conversation_id uuid)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  if not public.can_access_conversation(target_conversation_id) then
+  if public.can_access_conversation(target_conversation_id) is not true then
     raise exception 'Conversation unavailable';
   end if;
   update messages set read_at = now()
@@ -47,7 +47,7 @@ begin
   from session_proposals p
   where p.id = target_proposal_id and p.status = 'accepted';
   if target_conversation_id is null
-     or not public.can_access_conversation(target_conversation_id) then
+     or public.can_access_conversation(target_conversation_id) is not true then
     raise exception 'Session unavailable';
   end if;
   insert into session_readiness(proposal_id,user_id,ready)
@@ -71,7 +71,7 @@ begin
   from session_proposals p
   where p.id = target_proposal_id and p.status = 'accepted' and p.starts_at < now();
   if target_conversation_id is null
-     or not public.can_access_conversation(target_conversation_id) then
+     or public.can_access_conversation(target_conversation_id) is not true then
     raise exception 'Session is not ready for confirmation';
   end if;
   insert into session_outcomes(proposal_id,user_id,outcome)
