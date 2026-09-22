@@ -23,7 +23,7 @@ Purchases generally do not transfer between unrelated store accounts. Restoratio
 
 Cancellation stops future renewal but ordinarily does not terminate access already paid for. Deleting the app or Delos account does not automatically cancel an Apple subscription. Before account deletion, cancel external billing if you do not want it to renew.
 
-Except where required by law or provider policy, charges are nonrefundable and no prorated credits are provided for unused time, downgrades, inactivity, suspension for misconduct, or feature changes. Apple controls refunds for Apple purchases. Web refund requests may be submitted to `[BILLING EMAIL]`.
+Except where required by law or provider policy, charges are nonrefundable and no prorated credits are provided for unused time, downgrades, inactivity, suspension for misconduct, or feature changes. Apple controls refunds for Apple purchases. Web refund requests may be submitted to support@delosmusic.app.
 
 ## Changes
 
@@ -31,5 +31,5 @@ We may change subscription features or pricing prospectively. Required notice an
 
 ## Contact
 
-Billing support: `[BILLING EMAIL]`.
+Billing support: support@delosmusic.app.
 

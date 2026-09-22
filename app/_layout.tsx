@@ -10,6 +10,19 @@ Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enabled: Boolean(process.env.EXPO_PUBLIC_SENTRY_DSN),
   sendDefaultPii: false,
+  beforeSend(event) {
+    if (event.user) event.user = undefined;
+    if (event.request) {
+      event.request.cookies = undefined;
+      event.request.data = undefined;
+      event.request.headers = undefined;
+      event.request.query_string = undefined;
+    }
+    event.breadcrumbs = event.breadcrumbs?.filter(
+      (item) => !['http', 'fetch', 'xhr'].includes(item.category || ''),
+    );
+    return event;
+  },
 });
 
 function RootLayout() {

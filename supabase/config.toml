@@ -17,3 +17,9 @@ verify_jwt = true
 
 [functions.push-notifications]
 verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = true
+
+[functions.export-account-data]
+verify_jwt = true

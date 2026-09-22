@@ -1,5 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DemoRepository } from '@/data/demoRepository';
 import {
   BandCall,
@@ -14,6 +16,8 @@ import {
   SubscriptionTier,
   UserSettings,
   ProductEventName,
+  SupportTicket,
+  SupportTicketCategory,
 } from '@/types';
 
 type Row = Record<string, unknown>;
@@ -29,6 +33,19 @@ const colorFor = (id: string) =>
   palette[id.split('').reduce((sum, x) => sum + x.charCodeAt(0), 0) % palette.length]!;
 const profileSelect =
   '*, availability(*), influences(*), media_samples(*), profile_genres(genres(name)), profile_instruments(is_primary,instruments(name))';
+
+const authStorage = {
+  getItem: (key: string) =>
+    Platform.OS === 'web' ? AsyncStorage.getItem(key) : SecureStore.getItemAsync(key),
+  setItem: (key: string, value: string) =>
+    Platform.OS === 'web'
+      ? AsyncStorage.setItem(key, value)
+      : SecureStore.setItemAsync(key, value, {
+          keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+        }),
+  removeItem: (key: string) =>
+    Platform.OS === 'web' ? AsyncStorage.removeItem(key) : SecureStore.deleteItemAsync(key),
+};
 
 function rows(value: unknown): Row[] {
   return Array.isArray(value) ? (value as Row[]) : [];
@@ -109,6 +126,15 @@ export interface DelosRepository {
   block(targetId: string): Promise<void>;
   report(targetId: string, reason: string, details: string): Promise<void>;
   deleteAccount(): Promise<void>;
+  exportAccountData(): Promise<Record<string, unknown>>;
+  createSupportTicket(input: {
+    category: SupportTicketCategory;
+    subject: string;
+    description: string;
+    diagnostics?: Record<string, string>;
+  }): Promise<SupportTicket>;
+  listSupportTickets(): Promise<SupportTicket[]>;
+  clearApproximateLocation(): Promise<void>;
   uploadMedia(profileId: string, uri: string, mimeType: string, title: string): Promise<void>;
   listNotifications(): Promise<import('@/types').NotificationItem[]>;
   markNotificationsRead(): Promise<void>;
@@ -414,7 +440,52 @@ export class SupabaseRepository implements DelosRepository {
     if (error) throw error;
   }
   async deleteAccount() {
-    const { error } = await this.client.rpc('delete_own_account');
+    const { error } = await this.client.functions.invoke('delete-account');
+    if (error) throw error;
+  }
+  async exportAccountData() {
+    const { data, error } = await this.client.functions.invoke('export-account-data');
+    if (error) throw error;
+    return data as Record<string, unknown>;
+  }
+  async createSupportTicket(input: {
+    category: SupportTicketCategory;
+    subject: string;
+    description: string;
+    diagnostics?: Record<string, string>;
+  }): Promise<SupportTicket> {
+    const { data, error } = await this.client.rpc('create_support_ticket', {
+      ticket_category: input.category,
+      ticket_subject: input.subject,
+      ticket_description: input.description,
+      ticket_diagnostics: input.diagnostics || {},
+    });
+    if (error) throw error;
+    const item = data?.[0] || data;
+    return {
+      id: String(item.id), category: item.category, subject: String(item.subject),
+      description: String(item.description), status: item.status,
+      reference: String(item.reference), createdAt: String(item.created_at),
+      updatedAt: String(item.updated_at),
+    };
+  }
+  async listSupportTickets(): Promise<SupportTicket[]> {
+    const { data, error } = await this.client
+      .from('support_tickets').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map((item: Row) => ({
+      id: String(item.id), category: item.category as SupportTicketCategory,
+      subject: String(item.subject), description: String(item.description),
+      status: item.status as SupportTicket['status'], reference: String(item.reference),
+      createdAt: String(item.created_at), updatedAt: String(item.updated_at),
+    }));
+  }
+  async clearApproximateLocation() {
+    const user = (await this.client.auth.getUser()).data.user;
+    if (!user) throw new Error('Sign in to change location privacy.');
+    const { error } = await this.client.from('discovery_preferences').update({
+      approximate_latitude: null, approximate_longitude: null, updated_at: new Date().toISOString(),
+    }).eq('user_id', user.id);
     if (error) throw error;
   }
   async uploadMedia(profileId: string, uri: string, mimeType: string, title: string) {
@@ -812,7 +883,7 @@ export const supabase =
   url && anon
     ? createClient(url, anon, {
         auth: {
-          storage: AsyncStorage,
+          storage: authStorage,
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: false,

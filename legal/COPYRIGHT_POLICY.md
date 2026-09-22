@@ -10,8 +10,8 @@ If you believe content on Delos infringes your copyright, send a notice to our d
 
 **Copyright Agent**  
 AIFIXMY LLC  
-`[MAILING ADDRESS]`  
-`[COPYRIGHT EMAIL]`
+Livingston, New Jersey, United States  
+support@delosmusic.app
 
 The notice should include:
 
@@ -35,4 +35,3 @@ In appropriate circumstances, we may terminate repeat infringers and restrict ac
 ## Important filing note
 
 Naming a contact here does not itself register a DMCA designated agent with the U.S. Copyright Office. AIFIXMY should complete and maintain the Copyright Office’s online designation before relying on DMCA safe-harbor procedures.
-

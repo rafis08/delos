@@ -33,6 +33,7 @@ npm run build:web
 6. Enable Realtime for the `messages` table.
 7. Deploy `supabase/functions/push-notifications`, set a `WEBHOOK_SECRET`, and connect an authenticated Database Webhook on notification inserts. Service-role credentials belong only in the Edge Function environment.
 8. Assign moderation access only through the SQL editor or a trusted server (`update public.users set role='moderator' where id='<trusted-user-uuid>';`). The moderation UI lives at `/moderation` and its RPC returns data only to moderator/admin accounts.
+9. Deploy the authenticated `export-account-data` Edge Function alongside `delete-account`. Apply migration `019` for support tickets, moderation auditing, account sanctions, and adult attestation.
 9. Optionally set `EXPO_PUBLIC_SENTRY_DSN` for crash reporting; Delos disables Sentry and sends no telemetry when it is blank.
 
 ### Stripe web subscriptions
@@ -76,6 +77,8 @@ The app uses no scraped photography or third-party musician likenesses. Profile 
 The Supabase repository includes a Realtime `messages` subscription and maps database rows into the app domain model. With the migrations applied, all member, match, message, proposal, notification, report, block, and media data is stored in Supabase.
 
 Private-beta features include signed private-media URLs, media removal, persisted discovery preferences, approximate coordinates rounded before storage, server-computed distance, 50-message pagination, read receipts, proposal responses, calendar export, push-device registration, a push Edge Function, blocked-member management, a moderation queue, and a 15-like daily free-tier limit. Subscription entitlements come from `subscription_status`; production purchases remain disabled until App Store billing is connected.
+
+Support and safety include in-app FAQ and ticket history, optional privacy-minimized device diagnostics, a Support → Development escalation state, report/block flows, audited moderator suspensions and bans, 18+ attestation plus server-side age validation, approximate-location removal, authenticated data export, and permanent account deletion. See `DATA_PRIVACY.md` and `SUPPORT_RUNBOOK.md`.
 
 Delos also includes **Band Calls**, a project-first opportunity board where musicians describe what they are building and which roles they need. Musicians can send an introduction; call owners can invite them into a real match and conversation. Matching Band Calls create targeted alerts instead of generic engagement notifications.
 

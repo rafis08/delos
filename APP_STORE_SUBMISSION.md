@@ -5,7 +5,7 @@
 The codebase passes its automated tests, type checking, linting, Expo diagnostics, and web export. Do not send the app to Apple until every **BLOCKER** below is resolved.
 
 - **BLOCKER — Public website:** make `https://delosmusic.app` public and connect the domain. Every legal and support URL below must load without signing in.
-- **BLOCKER — Legal contacts:** replace every bracketed email/address placeholder in `legal/`. The policies must identify AIFIXMY LLC consistently and use a monitored support address.
+- **Legal contact configured:** `support@delosmusic.app` is the monitored contact across the legal package. AIFIXMY LLC is identified as based in Livingston, New Jersey, United States.
 - **BLOCKER — Production backend:** apply all production migrations, deploy required Edge Functions, configure authentication URLs, private storage, Realtime, push notifications, and moderation access.
 - **BLOCKER — Subscription:** create the App Store subscription, connect RevenueCat, and pass sandbox purchase, restore, expiry, cancellation, and entitlement tests.
 - **BLOCKER — Review access:** create a stable production reviewer account with populated data. Do not require a one-time code, invitation, or expired link.
@@ -85,7 +85,7 @@ Before submission, publish HTTPS pages for:
 - Support: `https://delosmusic.app/support`
 - Privacy choices/account deletion: `https://delosmusic.app/privacy-choices`
 
-Replace every bracketed placeholder in `legal/` with the final monitored contact or mailing address. Verify the effective dates, retention practices, subprocessors, governing law, and applicable privacy rights. The in-app Legal screen must match these published pages.
+The monitored legal contact is `support@delosmusic.app`. AIFIXMY LLC is identified as based in Livingston, New Jersey, United States. Verify the effective dates, retention practices, subprocessors, governing law, and applicable privacy rights. The in-app Legal screen must match these published pages.
 
 ## Screenshots and product page
 
@@ -155,7 +155,7 @@ Never submit a reviewer flow that depends on a developer manually approving an a
 
 ## Final release sequence
 
-1. Resolve all legal placeholders and publish the website/domain.
+1. Confirm the published legal pages and monitored support mailbox.
 2. Configure the production Supabase, push, moderation, RevenueCat, and StoreKit environments.
 3. Create the App Store Connect app record and subscription; finish agreements, tax, and banking.
 4. Run the physical-device QA matrix and accessibility pass.

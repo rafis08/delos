@@ -11,6 +11,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [adultAttested, setAdultAttested] = useState(false);
   const [error, setError] = useState('');
   const submit = async () => {
     const v = signUpSchema.safeParse({ email, password });
@@ -20,7 +21,8 @@ export default function SignUp() {
     }
     try {
       setLoading(true);
-      const result = await signUp(email, password);
+      if (!adultAttested) return setError('Confirm that you are 18 or older.');
+      const result = await signUp(email, password, adultAttested);
       if (result === 'verify')
         router.replace({ pathname: '/auth/reset', params: { verify: email } });
       else router.replace('/onboarding');
@@ -44,6 +46,12 @@ export default function SignUp() {
         autoCapitalize="none"
         keyboardType="email-address"
       />
+      <Button
+        label={adultAttested ? 'Age 18+ confirmed' : 'I confirm I am 18 or older'}
+        icon={adultAttested ? 'checkmark-circle' : 'ellipse-outline'}
+        variant="secondary"
+        onPress={() => setAdultAttested((value) => !value)}
+      />
       <Field
         label="Password"
         value={password}
@@ -53,7 +61,7 @@ export default function SignUp() {
       />
       <Button
         label={loading ? 'Creating account…' : 'Create account'}
-        disabled={loading}
+        disabled={loading || !adultAttested}
         onPress={submit}
       />
       <Text style={{ color: colors.muted, fontSize: 12, textAlign: 'center' }}>

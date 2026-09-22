@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Alert, Text } from 'react-native';
 import { Button, Chips, Field, Header, Screen } from '@/components/ui';
 import { repository } from '@/data/repository';
+import { useApp } from '@/store/AppContext';
 import { reportSchema } from '@/domain/validation';
 import { colors } from '@/theme';
 export default function Report() {
+  const { block } = useApp();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [reason, setReason] = useState('');
   const [details, setDetails] = useState('');
@@ -17,10 +19,18 @@ export default function Report() {
       return;
     }
     if (!repository) return setError('Supabase is not configured.');
-    await repository.report(id, reason, details);
-    Alert.alert('Report received', 'Thanks for helping keep Delos safe. Our team will review it.', [
-      { text: 'Done', onPress: () => router.replace('/(tabs)/discover') },
-    ]);
+    try {
+      await repository.report(id, reason, details);
+      Alert.alert('Report received', 'The report is confidential. Would you also like to block this member?', [
+        { text: 'Not now', onPress: () => router.replace('/(tabs)/discover') },
+        { text: 'Block member', style: 'destructive', onPress: async () => {
+          await block(id);
+          router.replace('/(tabs)/discover');
+        } },
+      ]);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not submit this report.');
+    }
   };
   return (
     <Screen>

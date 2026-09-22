@@ -13,18 +13,13 @@ These documents are launch drafts for **Delos**, operated by **AIFIXMY LLC**, a 
 - `PRIVACY_CHOICES_AND_ACCOUNT_DELETION.md`
 - `SUPPORT_POLICY.md`
 
-## Before publication
+## Official contact
 
-Replace every bracketed field below across the folder:
+`support@delosmusic.app` is the monitored contact for general support, privacy, safety, billing, appeals, copyright, and legal notices.
 
-- `[SUPPORT EMAIL]`
-- `[PRIVACY EMAIL]`
-- `[COPYRIGHT EMAIL]`
-- `[SAFETY EMAIL]`
-- `[APPEALS EMAIL]`
-- `[BILLING EMAIL]`
-- `[LEGAL NOTICE EMAIL]`
-- `[MAILING ADDRESS]`
+## Business location
+
+AIFIXMY LLC is based in Livingston, New Jersey, United States. Email is the official initial contact method.
 ## Canonical public URLs
 
 - Website: `https://delosmusic.app`
@@ -37,6 +32,6 @@ Replace every bracketed field below across the folder:
 - Privacy Choices and Account Deletion: `https://delosmusic.app/privacy-choices`
 - Support: `https://delosmusic.app/support`
 
-Do not publish these files while placeholders remain. Confirm the final vendor list, retention periods, insurance coverage, tax treatment, and dispute provisions with qualified counsel. In particular, counsel should review the arbitration/class-waiver language, New Jersey consumer-law compliance, state privacy disclosures, and the handling of safety reports and preserved evidence.
+Confirm the final vendor list, retention periods, insurance coverage, tax treatment, and dispute provisions with qualified counsel. In particular, counsel should review the arbitration/class-waiver language, New Jersey consumer-law compliance, state privacy disclosures, and the handling of safety reports and preserved evidence.
 
 These drafts do not create attorney-client privilege and are not a substitute for advice from a licensed attorney.

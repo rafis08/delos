@@ -38,7 +38,7 @@ Do not claim another person’s performance, composition, master recording, cred
 
 AIFIXMY may remove content, reduce distribution, limit features, require verification, preserve records, issue warnings, suspend or terminate accounts, block device or payment identifiers, and refer matters to providers or authorities. Enforcement decisions may consider severity, context, evidence, prior conduct, risk, and legal obligations. We may act without warning in urgent or serious cases.
 
-To report content, use the in-app report control or contact `[SAFETY EMAIL]`. Include URLs, usernames, dates, and screenshots when safe. Do not submit knowingly false reports. Appeals may be sent to `[APPEALS EMAIL]`; an appeal does not guarantee reinstatement.
+To report content, use the in-app report control or contact support@delosmusic.app. Include URLs, usernames, dates, and screenshots when safe. Do not submit knowingly false reports. Appeals may be sent to support@delosmusic.app; an appeal does not guarantee reinstatement.
 
 Delos is not an emergency service. If danger is immediate, contact local emergency services.
 

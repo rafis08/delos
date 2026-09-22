@@ -22,7 +22,7 @@ Deleting Delos does not automatically cancel an Apple subscription. Cancel throu
 
 ## Privacy requests
 
-To request access, correction, deletion, portability, restriction, objection, or appeal a denied request, contact `[PRIVACY EMAIL]`. State the request, the jurisdiction where you live, and the email associated with Delos. Do not send passwords or sensitive identity documents unless we specifically request a secure verification method.
+To request access, correction, deletion, portability, restriction, objection, or appeal a denied request, contact support@delosmusic.app. State the request, the jurisdiction where you live, and the email associated with Delos. Do not send passwords or sensitive identity documents unless we specifically request a secure verification method.
 
 We may verify identity and authority before responding. Authorized agents must provide permission and may need to verify the user directly. We respond within the period required by applicable law.
 

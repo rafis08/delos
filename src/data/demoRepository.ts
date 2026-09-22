@@ -15,9 +15,12 @@ import {
   MusicianProfile,
   NotificationItem,
   SessionProposal,
+  SupportTicket,
+  SupportTicketCategory,
 } from '@/types';
 
 export class DemoRepository {
+  private supportTickets: SupportTicket[] = [];
   private profile = demoUser;
   private passed = new Set<string>();
   private liked = new Set<string>();
@@ -226,6 +229,26 @@ export class DemoRepository {
   }
   async report() {}
   async deleteAccount() {}
+  async exportAccountData(): Promise<Record<string, unknown>> {
+    return { exportedAt: new Date().toISOString(), profile: this.profile, note: 'Demo data export' };
+  }
+  async createSupportTicket(input: {
+    category: SupportTicketCategory;
+    subject: string;
+    description: string;
+    diagnostics?: Record<string, string>;
+  }): Promise<SupportTicket> {
+    const now = new Date().toISOString();
+    const ticket: SupportTicket = {
+      id: `demo-ticket-${Date.now()}`, category: input.category, subject: input.subject,
+      description: input.description, status: 'open', reference: `DEMO-${Date.now().toString().slice(-6)}`,
+      createdAt: now, updatedAt: now,
+    };
+    this.supportTickets.unshift(ticket);
+    return ticket;
+  }
+  async listSupportTickets() { return this.supportTickets; }
+  async clearApproximateLocation() { this.profile = { ...this.profile, approximateCoordinates: undefined }; }
   async uploadMedia(_profileId: string, uri: string, mimeType: string, title: string) {
     const type = mimeType.startsWith('image/')
       ? 'image'

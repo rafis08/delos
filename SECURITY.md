@@ -11,12 +11,15 @@
 - Approximate coordinates remain in the owner-only discovery-preferences table; discovery exposes calculated distance rather than coordinates.
 - Auth callbacks use PKCE authorization-code exchange and accept only Delos auth routes; raw tokens in arbitrary deep links are ignored.
 - Session readiness, outcomes, proposal reads, and Band Call applications now enforce blocking server-side. Band Call applications and reports have bounded input and database-backed rate limits.
+- Native authentication sessions use encrypted, device-bound secure storage. Web sessions remain in browser storage and therefore depend on the browser origin remaining free of script injection.
+- Account deletion removes Supabase authentication/data/storage records, clears local app state, and attempts processor-side Stripe and RevenueCat customer deletion before completing.
+- Sentry remains disabled without a public DSN. When enabled, user identity, request bodies, headers, cookies, query strings, and network breadcrumbs are stripped before transmission.
 
 ## Required rollout
 
-1. Back up the production database and apply migrations through `202609200016_security_hardening.sql` in staging first.
+1. Back up the production database and apply migrations through `202609220019_support_safety_privacy.sql` in staging first.
 2. Run the Supabase database linter and manually test two real test accounts before production rollout.
-3. Confirm Edge Function secrets are configured in Supabase, not in Expo `EXPO_PUBLIC_*` variables.
+3. Deploy the authenticated `delete-account` Edge Function, then confirm its service-role, Stripe, and RevenueCat secrets are configured in Supabase—not in Expo `EXPO_PUBLIC_*` variables.
 4. Rotate any credential that has ever been committed, pasted into logs, or shipped in a client build.
 5. In Supabase Auth, require email confirmation, enable leaked-password protection and CAPTCHA, set conservative auth rate limits, restrict redirect URLs, and enable MFA when the product flow is ready.
 
@@ -41,3 +44,4 @@ Using two normal accounts (A and B) plus a third non-participant account (C), ve
 5. Separate public discovery fields from member-private profile fields with a dedicated view/RPC, and review whether age, availability, transportation, gear, and last-active state should be shown by default.
 6. Add audit events and alerts for moderation actions, repeated authorization failures, report spikes, webhook failures, and unusual upload or messaging volume.
 7. Review data retention, account-deletion completion, backups, incident response, and privacy/export workflows before launch.
+8. Track the current moderate Expo toolchain advisories and upgrade through Expo's supported SDK path; do not apply npm's suggested downgrade to Expo 46.

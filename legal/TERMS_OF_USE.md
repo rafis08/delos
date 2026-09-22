@@ -105,7 +105,7 @@ These Terms are governed by the laws of New Jersey, without regard to conflict-o
 
 ## 17. Informal dispute resolution
 
-Before filing a claim, a party must send a written Notice of Dispute describing the claimant, facts, requested relief, and contact information. Send notices to `[LEGAL NOTICE EMAIL]` and `[MAILING ADDRESS]`. The parties will attempt good-faith individual resolution for 60 days. Limitations periods are tolled during that period where permitted.
+Before filing a claim, a party must send a written Notice of Dispute describing the claimant, facts, requested relief, and contact information to support@delosmusic.app. The parties will attempt good-faith individual resolution for 60 days. Limitations periods are tolled during that period where permitted.
 
 ## 18. Binding individual arbitration and class waiver
 
@@ -113,7 +113,7 @@ Except for eligible small-claims matters, intellectual-property claims, or reque
 
 **NO CLASS OR REPRESENTATIVE PROCEEDINGS:** To the maximum extent permitted by law, disputes must proceed individually. Neither party may participate as a plaintiff or class member in a class, collective, coordinated, consolidated, mass, or representative action. The arbitrator may award relief only to the individual claimant as necessary for that claim.
 
-You may opt out of this arbitration agreement by sending your name, account email, and a clear opt-out statement to `[LEGAL NOTICE EMAIL]` within 30 days after first accepting these Terms. If you opt out, or if this section is unenforceable for a claim, exclusive venue lies in the state or federal courts located in New Jersey, and each party consents to jurisdiction there.
+You may opt out of this arbitration agreement by sending your name, account email, and a clear opt-out statement to support@delosmusic.app within 30 days after first accepting these Terms. If you opt out, or if this section is unenforceable for a claim, exclusive venue lies in the state or federal courts located in New Jersey, and each party consents to jurisdiction there.
 
 If a batch of 25 or more substantially similar arbitration demands is coordinated by the same or related counsel, the administrator’s mass-arbitration procedures apply, and claims may be staged in bellwether groups where lawful. Courts—not arbitrators—decide disputes about the class waiver or mass-filing procedure.
 
@@ -129,7 +129,6 @@ These Terms and incorporated policies are the entire agreement about the Service
 
 **AIFIXMY LLC**  
 New Jersey entity number 0450935515  
-`[MAILING ADDRESS]`  
-Support: `[SUPPORT EMAIL]`  
-Legal notices: `[LEGAL NOTICE EMAIL]`
-
+Livingston, New Jersey, United States  
+Support: support@delosmusic.app  
+Legal notices: support@delosmusic.app

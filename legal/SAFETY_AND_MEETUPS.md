@@ -24,7 +24,7 @@ Meeting a person discovered online carries risk. Delos does not perform comprehe
 
 ## Reporting
 
-Use in-app block and report tools. For non-emergency safety help, contact `[SAFETY EMAIL]`. In immediate danger, contact local emergency services. AIFIXMY may preserve information, restrict accounts, and cooperate with lawful investigations, but cannot provide emergency response, physical protection, or legal representation.
+Use in-app block and report tools. For non-emergency safety help, contact support@delosmusic.app. In immediate danger, contact local emergency services. AIFIXMY may preserve information, restrict accounts, and cooperate with lawful investigations, but cannot provide emergency response, physical protection, or legal representation.
 
 You remain responsible for evaluating interactions and taking reasonable precautions. Nothing in this policy limits rights or liabilities that cannot legally be limited.
 

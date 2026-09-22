@@ -112,6 +112,18 @@ export type UserSettings = {
   showAvailableNow: boolean;
   incognito: boolean;
 };
+export type SupportTicketCategory = 'Account' | 'Safety' | 'Billing' | 'Technical' | 'Feedback';
+export type SupportTicketStatus = 'open' | 'in_progress' | 'waiting_on_user' | 'resolved';
+export type SupportTicket = {
+  id: string;
+  category: SupportTicketCategory;
+  subject: string;
+  description: string;
+  status: SupportTicketStatus;
+  reference: string;
+  createdAt: string;
+  updatedAt: string;
+};
 export type SubscriptionTier = 'free' | 'amplified';
 export type LikeAllowance = {
   tier: SubscriptionTier;

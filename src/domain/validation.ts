@@ -50,6 +50,12 @@ export const profileSchema = profileBasicsSchema.extend({
 });
 export const messageSchema = z.string().trim().min(1).max(2000);
 export const reportSchema = z.object({ reason: z.string().min(1), details: z.string().max(1000) });
+export const supportTicketSchema = z.object({
+  category: z.enum(['Account', 'Safety', 'Billing', 'Technical', 'Feedback']),
+  subject: z.string().trim().min(5, 'Add a short subject').max(120),
+  description: z.string().trim().min(20, 'Tell us a little more so we can help').max(3000),
+  includeDiagnostics: z.boolean(),
+});
 export const mediaRules = {
   image: { types: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 10_000_000 },
   audio: {

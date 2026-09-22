@@ -5,7 +5,7 @@
 
 This Privacy Policy explains how AIFIXMY LLC, a New Jersey limited liability company ("AIFIXMY," "Delos," "we," "us," or "our"), collects, uses, discloses, retains, and protects information through the Delos mobile application, website, and related services (collectively, the "Service").
 
-Contact: `[PRIVACY EMAIL]` or `[MAILING ADDRESS]`.
+Contact: support@delosmusic.app. AIFIXMY LLC is based in Livingston, New Jersey, United States.
 
 ## 1. Scope and eligibility
 
@@ -106,7 +106,7 @@ You can edit profile and discovery settings, disable notifications through devic
 
 Depending on where you live, you may request access, correction, deletion, portability, restriction, objection, withdrawal of consent, or an appeal of a denied privacy request. You may also have rights concerning sale, sharing, targeted advertising, profiling, or sensitive data. Delos does not currently sell personal information or use it for cross-context behavioral advertising.
 
-Submit requests at `[PRIVACY EMAIL]` or `https://delosmusic.app/privacy-choices`. We may verify your identity and authority. Authorized agents must provide proof of authorization. We will not discriminate against you for exercising applicable rights.
+Submit requests at support@delosmusic.app or `https://delosmusic.app/privacy-choices`. We may verify your identity and authority. Authorized agents must provide proof of authorization. We will not discriminate against you for exercising applicable rights.
 
 ## 8. Security
 
@@ -118,7 +118,7 @@ The Service and its providers may process information in the United States and o
 
 ## 10. Children
 
-Delos is not directed to anyone under 18. Report a suspected minor account to `[SUPPORT EMAIL]`.
+Delos is not directed to anyone under 18. Report a suspected minor account to support@delosmusic.app.
 
 ## 11. Changes
 
@@ -128,7 +128,6 @@ We may update this Policy. We will post the revised version and update the date 
 
 **AIFIXMY LLC**  
 New Jersey entity number 0450935515  
-`[MAILING ADDRESS]`  
-Privacy: `[PRIVACY EMAIL]`  
-Support: `[SUPPORT EMAIL]`
-
+Livingston, New Jersey, United States  
+Privacy: support@delosmusic.app  
+Support: support@delosmusic.app

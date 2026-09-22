@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Button, Header, Screen, SettingRow } from '@/components/ui';
 import { repository } from '@/data/repository';
@@ -7,7 +7,7 @@ import { useApp } from '@/store/AppContext';
 import { colors, radius, space } from '@/theme';
 import { SubscriptionTier } from '@/types';
 export default function Settings() {
-  const { settings, updateSettings, signOut, deleteAccount } = useApp();
+  const { settings, updateSettings, signOut } = useApp();
   const [tier, setTier] = useState<SubscriptionTier>('free');
   useEffect(() => {
     repository
@@ -63,20 +63,20 @@ export default function Settings() {
         />
         <SettingRow
           icon="shield-checkmark"
-          title="Privacy"
-          subtitle="General location only; email stays private"
-          onPress={() =>
-            Alert.alert(
-              'Your privacy',
-              'Only your general location and profile details are shown. Email and precise location are never public.',
-            )
-          }
+          title="Privacy controls"
+          subtitle="Visibility, location, blocked members, and safety"
+          onPress={() => router.push('/privacy-controls')}
         />
+        <SettingRow icon="folder-open" title="Data & account" subtitle="Export or delete your Delos data" onPress={() => router.push('/data-rights')} />
         <SettingRow
           icon="document-text"
           title="Privacy & community standards"
           onPress={() => router.push('/legal')}
         />
+      </View>
+      <View style={styles.group}>
+        <SettingRow icon="help-circle" title="Help & support" subtitle="FAQ, support requests, and request status" onPress={() => router.push('/support')} />
+        <SettingRow icon="book" title="FAQ" subtitle="Fast answers and safety guidance" onPress={() => router.push('/faq')} />
       </View>
       <Button
         label="Sign out"
@@ -85,27 +85,6 @@ export default function Settings() {
           await signOut();
           router.replace('/');
         }}
-      />
-      <Button
-        label="Delete account"
-        variant="ghost"
-        onPress={() =>
-          Alert.alert(
-            'Delete your account?',
-            'This permanently removes your profile, media, matches, and messages. This cannot be undone.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Delete',
-                style: 'destructive',
-                onPress: async () => {
-                  await deleteAccount();
-                  router.replace('/');
-                },
-              },
-            ],
-          )
-        }
       />
       <Text style={styles.version}>DELOS 1.0.0</Text>
     </Screen>

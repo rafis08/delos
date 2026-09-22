@@ -24,7 +24,7 @@ type AppState = {
   demoMode: boolean;
   enterDemo(): Promise<void>;
   signIn(email: string, password: string): Promise<void>;
-  signUp(email: string, password: string): Promise<'confirmed' | 'verify'>;
+  signUp(email: string, password: string, adultAttested: boolean): Promise<'confirmed' | 'verify'>;
   resetPassword(email: string): Promise<void>;
   signOut(): Promise<void>;
   finishOnboarding(profile: MusicianProfile): Promise<void>;
@@ -161,12 +161,16 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       },
-      signUp: async (email, password) => {
+      signUp: async (email, password, adultAttested) => {
         if (!supabase) throw new Error('Supabase is not configured.');
+        if (!adultAttested) throw new Error('You must confirm that you are 18 or older.');
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: Linking.createURL('/auth/signin') },
+          options: {
+            emailRedirectTo: Linking.createURL('/auth/signin'),
+            data: { adult_attested_at: new Date().toISOString() },
+          },
         });
         if (error) throw error;
         return data.session ? 'confirmed' : 'verify';
@@ -207,12 +211,17 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       block: async (id) => needRepo().block(id),
       deleteAccount: async () => {
         await needRepo().deleteAccount();
-        if (demoMode) await AsyncStorage.removeItem('delos:demo');
-        else await supabase?.auth.signOut();
+        await Promise.all([
+          AsyncStorage.removeItem('delos:demo'),
+          AsyncStorage.removeItem('delos:settings'),
+        ]);
+        if (!demoMode) await supabase?.auth.signOut({ scope: 'local' });
         enableSupabaseRepository();
         setDemoMode(false);
         setUserId(null);
         setProfile(null);
+        setNotifications([]);
+        setSettings(defaultSettings);
       },
       markNotificationsRead: async () => {
         await needRepo().markNotificationsRead();

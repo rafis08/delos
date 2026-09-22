@@ -4,6 +4,7 @@ import { Text } from 'react-native';
 import { BrandLockup } from '@/components/BrandMark';
 import { Button, Field, Header, Screen } from '@/components/ui';
 import { supabase } from '@/data/repository';
+import { signUpSchema } from '@/domain/validation';
 import { colors } from '@/theme';
 
 export default function UpdatePassword() {
@@ -22,7 +23,9 @@ export default function UpdatePassword() {
         label={saving ? 'Updating…' : 'Update password'}
         disabled={saving}
         onPress={async () => {
-          if (password.length < 8) return setError('Use at least 8 characters.');
+          const validation = signUpSchema.shape.password.safeParse(password);
+          if (!validation.success)
+            return setError(validation.error.issues[0]?.message || 'Choose a stronger password.');
           if (password !== confirm) return setError('Passwords do not match.');
           if (!supabase) return setError('Supabase is not configured.');
           setSaving(true);
