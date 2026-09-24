@@ -28,7 +28,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>delos</string>
-				<string>com.delosmusic.app</string>
+				<string>com.delos-music.app</string>
 			</array>
 		</dict>
 	</array>

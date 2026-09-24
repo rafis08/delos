@@ -17,7 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* Delos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Delos.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Delos Music.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Delos Music.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Delos/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Delos/Info.plist; sourceTree = "<group>"; };
 		360DA9A16A89ED18B1BE9725 /* libPods-Delos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Delos.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,7 +100,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* Delos.app */,
+				13B07F961A680F5B00A75B9A /* Delos Music.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -154,7 +154,7 @@
 			);
 			name = Delos;
 			productName = Delos;
-			productReference = 13B07F961A680F5B00A75B9A /* Delos.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Delos Music.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -412,8 +412,8 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.delosmusic.app;
-				PRODUCT_NAME = Delos;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.delos-music.app";
+				PRODUCT_NAME = "Delos Music";
 				SWIFT_OBJC_BRIDGING_HEADER = "Delos/Delos-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -446,8 +446,8 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.delosmusic.app;
-				PRODUCT_NAME = Delos;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.delos-music.app";
+				PRODUCT_NAME = "Delos Music";
 				SWIFT_OBJC_BRIDGING_HEADER = "Delos/Delos-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;

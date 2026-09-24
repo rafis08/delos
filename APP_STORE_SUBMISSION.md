@@ -22,7 +22,8 @@ Recommended first release posture: iPhone only, United States storefront first, 
 - **Primary category:** Music
 - **Secondary category:** Social Networking
 - **Age:** Adults 18+. Answer Apple's current questionnaire truthfully for user-generated content, messaging, mature themes, and real-world meetups, then select the higher 18+ rating where App Store Connect permits an override.
-- **Bundle ID:** `com.delosmusic.app` (confirm availability and ownership before the first build; it cannot be changed after upload)
+- **iOS Bundle ID:** `com.delos-music.app` (confirm availability and ownership before the first build; it cannot be changed after upload)
+- **Android package:** `com.delosmusic.app`
 
 ### Promotional text
 

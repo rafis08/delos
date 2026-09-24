@@ -50,7 +50,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.delosmusic.app",
+      "bundleIdentifier": "com.delos-music.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
