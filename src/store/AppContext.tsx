@@ -11,6 +11,7 @@ import {
 import { MusicianProfile, NotificationItem, UserSettings } from '@/types';
 import { requestPushToken } from '@/services/push';
 import { demoModeEnabled } from '@/config/runtime';
+import { authLinkRoute, establishSessionFromAuthLink } from '@/domain/authLinks';
 
 type AppState = {
   ready: boolean;
@@ -64,16 +65,18 @@ export function AppProvider({ children }: React.PropsWithChildren) {
     const handleAuthLink = async (url: string | null) => {
       if (!url || !supabase) return;
       const parsed = Linking.parse(url);
-      const path = parsed.path?.replace(/^\//, '');
       const expected = Linking.parse(Linking.createURL('/'));
       const trustedOrigin =
         parsed.scheme === 'delos' ||
         (['http', 'https'].includes(parsed.scheme || '') &&
           parsed.scheme === expected.scheme &&
           parsed.hostname === expected.hostname);
-      if (!trustedOrigin || !['auth/confirm', 'auth/update-password'].includes(path || '')) return;
-      const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : null;
-      if (code) await supabase.auth.exchangeCodeForSession(code);
+      if (!trustedOrigin || !authLinkRoute(url)) return;
+      try {
+        await establishSessionFromAuthLink(supabase, url);
+      } catch {
+        // The destination screen presents an actionable expired-link message.
+      }
     };
     void Linking.getInitialURL().then(handleAuthLink);
     const subscription = Linking.addEventListener('url', ({ url }) => void handleAuthLink(url));

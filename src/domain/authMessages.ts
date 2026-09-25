@@ -11,5 +11,7 @@ export function friendlyAuthError(cause: unknown, fallback: string) {
     return 'Too many attempts. Wait a few minutes and try again.';
   if (message.includes('network') || message.includes('fetch'))
     return 'Delos could not connect. Check your connection and try again.';
+  if (message.includes('auth session missing'))
+    return 'This password-reset link is invalid or has expired. Request a new link and try again.';
   return raw || fallback;
 }
