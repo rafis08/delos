@@ -11,7 +11,7 @@ npm install
 npm start
 ```
 
-Press `i`, `a`, or `w` in Expo to open iOS, Android, or web. Create an account for the live Supabase experience, or choose **Explore the demo** for an isolated on-device walkthrough with clearly labeled fictional data. Demo actions never write to Supabase.
+Press `i`, `a`, or `w` in Expo to open iOS, Android, or web. By default, every account uses the live Supabase experience and only real member profiles appear. For a private development walkthrough, set `EXPO_PUBLIC_ENABLE_DEMO_MODE=true`; this exposes a clearly labeled, isolated demo whose actions never write to Supabase. Never enable that variable for an external beta or production build.
 
 Useful checks:
 
@@ -28,7 +28,7 @@ npm run build:web
 1. Create a Supabase project.
 2. Apply every file in `supabase/migrations/` in filename order with the Supabase CLI or SQL editor. Existing projects must also apply migrations `003` through `006` to enable beta safety, Band Calls, applications, readiness, Band Rooms, and targeted opportunity alerts.
 3. Apply `supabase/seed.sql` for instrument and genre taxonomy values (not user profiles).
-4. Copy `.env.example` to `.env.local` and add only the public project URL and anonymous key.
+4. Copy `.env.example` to `.env.local` and add only the public project URL and anonymous key. Keep `EXPO_PUBLIC_ENABLE_DEMO_MODE=false` for real-member builds.
 5. Add `delos://auth/update-password` and your web origin to Authentication → URL Configuration.
 6. Enable Realtime for the `messages` table.
 7. Deploy `supabase/functions/push-notifications`, set a `WEBHOOK_SECRET`, and connect an authenticated Database Webhook on notification inserts. Service-role credentials belong only in the Edge Function environment.
@@ -82,7 +82,7 @@ Support and safety include in-app FAQ and ticket history, optional privacy-minim
 
 Delos also includes **Band Calls**, a project-first opportunity board where musicians describe what they are building and which roles they need. Musicians can send an introduction; call owners can invite them into a real match and conversation. Matching Band Calls create targeted alerts instead of generic engagement notifications.
 
-After matching, conversations deliberately point toward action: first-message prompts, rehearsal proposals, two-person readiness confirmation, calendar export, and a shared **Band Room** for setlists, preparation tasks, and musical notes. Profile completion is calculated from real profile data and always suggests one useful next step. The shortlist, native profile sharing, and explainable six-factor chemistry view support musicians who are not ready to decide immediately. All flows are populated in demo mode and backed by Supabase in production.
+After matching, conversations deliberately point toward action: first-message prompts, rehearsal proposals, two-person readiness confirmation, calendar export, and a shared **Band Room** for setlists, preparation tasks, and musical notes. Profile completion is calculated from real profile data and always suggests one useful next step. The shortlist, native profile sharing, and explainable six-factor chemistry view support musicians who are not ready to decide immediately. Demo data is available only in explicitly enabled private builds; live builds use Supabase exclusively.
 
 Billing uses the native-store adapter on iOS. Complete the RevenueCat and App Store Connect setup in `APP_STORE_SUBMISSION.md` before enabling production purchases.
 

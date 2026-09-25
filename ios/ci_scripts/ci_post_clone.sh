@@ -16,6 +16,7 @@ if [ -n "${EXPO_PUBLIC_SUPABASE_URL:-}" ] && [ -n "${EXPO_PUBLIC_SUPABASE_ANON_K
   printf '%s\n' \
     "EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL" \
     "EXPO_PUBLIC_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY" \
+    "EXPO_PUBLIC_ENABLE_DEMO_MODE=${EXPO_PUBLIC_ENABLE_DEMO_MODE:-false}" \
     > "$REPOSITORY_ROOT/.env.local"
 else
   echo "warning: Supabase variables are missing from the Xcode Cloud workflow"

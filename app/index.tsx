@@ -6,6 +6,7 @@ import { Button, Screen } from '@/components/ui';
 import { BrandLockup, BrandMark } from '@/components/BrandMark';
 import { useApp } from '@/store/AppContext';
 import { colors, space, type } from '@/theme';
+import { demoModeEnabled } from '@/config/runtime';
 
 export default function Welcome() {
   const { ready, authenticated, onboarded, configured, enterDemo } = useApp();
@@ -45,16 +46,20 @@ export default function Welcome() {
           variant="secondary"
           onPress={() => router.push('/auth/signin')}
         />
-        <Button
-          label="Explore the demo"
-          variant="ghost"
-          onPress={async () => {
-            await enterDemo();
-            router.replace('/(tabs)/discover');
-          }}
-        />
+        {demoModeEnabled && (
+          <Button
+            label="Explore the demo"
+            variant="ghost"
+            onPress={async () => {
+              await enterDemo();
+              router.replace('/(tabs)/discover');
+            }}
+          />
+        )}
       </View>
-      <Text style={styles.demoNote}>DEMO MODE USES FICTIONAL DATA ON THIS DEVICE ONLY</Text>
+      {demoModeEnabled && (
+        <Text style={styles.demoNote}>INTERNAL DEMO · FICTIONAL DATA</Text>
+      )}
       <Text style={styles.legal}>
         18+ only · By continuing, you agree to our community standards.
       </Text>

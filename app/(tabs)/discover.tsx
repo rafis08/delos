@@ -1,7 +1,15 @@
 import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { SwipeableProfileCard } from '@/components/SwipeableProfileCard';
 import { MainTabScreen } from '@/components/MainTabScreen';
 import { BrandLockup } from '@/components/BrandMark';
@@ -144,15 +152,35 @@ export default function Discover() {
     return (
       <MainTabScreen tab="discover" scroll={false}>
         <StateView
-          icon="checkmark-done"
-          title="You’re all caught up"
-          body="You’ve heard everyone in your current radius. Adjust filters or check back soon."
+          icon="musical-notes-outline"
+          title="Delos is growing in your area"
+          body="You’ve seen every compatible musician nearby. Invite someone you want to play with, expand your search, or explore active band calls."
           action={
-            <IconButton
-              icon="options"
-              label="Adjust filters"
-              onPress={() => router.push('/filters')}
-            />
+            <View style={styles.emptyActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() =>
+                  void Share.share({
+                    message:
+                      'Join me on Delos — find musicians who match your sound, schedule, location, and commitment. https://delosmusic.app',
+                  })
+                }
+                style={styles.emptyPrimary}
+              >
+                <Text style={styles.emptyPrimaryText}>INVITE A MUSICIAN</Text>
+              </Pressable>
+              <View style={styles.emptySecondaryRow}>
+                <Pressable onPress={() => router.push('/filters')} style={styles.emptySecondary}>
+                  <Text style={styles.emptySecondaryText}>Expand search</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push('/opportunities')}
+                  style={styles.emptySecondary}
+                >
+                  <Text style={styles.emptySecondaryText}>Band calls</Text>
+                </Pressable>
+              </View>
+            </View>
           }
         />
       </MainTabScreen>
@@ -296,4 +324,26 @@ const styles = StyleSheet.create({
     gap: 10,
     minHeight: 58,
   },
+  emptyActions: { width: '100%', maxWidth: 360, gap: 10, marginTop: 8 },
+  emptyPrimary: {
+    minHeight: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F2B134',
+    paddingHorizontal: 20,
+  },
+  emptyPrimaryText: { color: '#3C2500', fontWeight: '900', letterSpacing: 0.6 },
+  emptySecondaryRow: { flexDirection: 'row', gap: 10 },
+  emptySecondary: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5D5B8',
+  },
+  emptySecondaryText: { color: '#5D4528', fontWeight: '800' },
 });

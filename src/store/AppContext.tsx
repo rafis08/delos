@@ -10,6 +10,7 @@ import {
 } from '@/data/repository';
 import { MusicianProfile, NotificationItem, UserSettings } from '@/types';
 import { requestPushToken } from '@/services/push';
+import { demoModeEnabled } from '@/config/runtime';
 
 type AppState = {
   ready: boolean;
@@ -106,7 +107,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       .then((value) => value && setSettings(JSON.parse(value)))
       .catch(() => undefined);
     void AsyncStorage.getItem('delos:demo').then(async (flag) => {
-      if (flag === 'true') {
+      if (flag === 'true' && demoModeEnabled) {
         enableDemoRepository();
         setDemoMode(true);
         setUserId('me');
@@ -115,6 +116,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         setReady(true);
         return;
       }
+      if (flag === 'true') await AsyncStorage.removeItem('delos:demo');
       enableSupabaseRepository();
       if (!supabase) {
         setReady(true);
@@ -146,6 +148,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       settings,
       demoMode,
       enterDemo: async () => {
+        if (!demoModeEnabled) throw new Error('Demo mode is not available in this build.');
         enableDemoRepository();
         await AsyncStorage.setItem('delos:demo', 'true');
         setDemoMode(true);
