@@ -1,54 +1,83 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { Button, Field, Header, Screen } from '@/components/ui';
 import { BrandLockup } from '@/components/BrandMark';
 import { colors } from '@/theme';
 import { useApp } from '@/store/AppContext';
+import { signInSchema } from '@/domain/validation';
+import { friendlyAuthError } from '@/domain/authMessages';
+
 export default function Reset() {
-  const params = useLocalSearchParams<{ verify?: string }>();
   const { resetPassword } = useApp();
-  const [email, setEmail] = useState(params.verify || '');
-  const [sent, setSent] = useState(Boolean(params.verify));
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const submit = async () => {
+    const result = signInSchema.shape.email.safeParse(email.trim());
+    if (!result.success) return setError('Enter a valid email address.');
+    try {
+      setLoading(true);
+      setError('');
+      await resetPassword(email.trim().toLowerCase());
+      setSent(true);
+    } catch (cause) {
+      setError(friendlyAuthError(cause, 'Could not send the reset email.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Screen>
+    <Screen style={styles.screen}>
       <BrandLockup compact />
-      <Header
-        eyebrow={params.verify ? 'VERIFY YOUR EMAIL' : 'ACCOUNT RECOVERY'}
-        title={params.verify ? 'Check your inbox' : 'Reset password'}
-      />
+      <Header eyebrow="ACCOUNT RECOVERY" title={sent ? 'Check your inbox' : 'Reset password'} />
       {sent ? (
         <>
-          <Text style={{ color: colors.text, fontSize: 18 }}>Check your inbox</Text>
-          <Text style={{ color: colors.muted }}>
-            If an account exists for {email}, we sent reset instructions.
+          <Text style={styles.body}>
+            If an account exists for {email.trim()}, Delos sent a secure password-reset link. The
+            link will return you to the app.
           </Text>
-          <Button label="Back to sign in" onPress={() => router.back()} />
+          <Button label="Back to sign in" onPress={() => router.replace('/auth/signin')} />
+          <Button label="Use another email" variant="ghost" onPress={() => setSent(false)} />
         </>
       ) : (
         <>
+          <Text style={styles.body}>
+            Enter the email connected to your Delos account. We’ll send a secure link to choose a
+            new password.
+          </Text>
           <Field
             label="Email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              setError('');
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoComplete="email"
+            textContentType="emailAddress"
+            returnKeyType="send"
+            onSubmitEditing={() => void submit()}
           />
+          {!!error && <Text style={styles.error}>{error}</Text>}
           <Button
-            label="Send reset link"
-            onPress={async () => {
-              try {
-                await resetPassword(email);
-                setSent(true);
-              } catch (cause) {
-                setError(cause instanceof Error ? cause.message : 'Could not send reset email');
-              }
-            }}
+            label={loading ? 'Sending link…' : 'Send reset link'}
+            disabled={loading}
+            onPress={submit}
           />
-          {!!error && <Text style={{ color: colors.danger }}>{error}</Text>}
+          <Button label="Back to sign in" variant="ghost" onPress={() => router.back()} />
         </>
       )}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: { justifyContent: 'center', maxWidth: 560 },
+  body: { color: colors.muted, fontSize: 16, lineHeight: 23 },
+  error: { color: colors.danger, fontWeight: '700' },
+});

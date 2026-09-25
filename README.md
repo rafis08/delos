@@ -29,12 +29,12 @@ npm run build:web
 2. Apply every file in `supabase/migrations/` in filename order with the Supabase CLI or SQL editor. Existing projects must also apply migrations `003` through `006` to enable beta safety, Band Calls, applications, readiness, Band Rooms, and targeted opportunity alerts.
 3. Apply `supabase/seed.sql` for instrument and genre taxonomy values (not user profiles).
 4. Copy `.env.example` to `.env.local` and add only the public project URL and anonymous key. Keep `EXPO_PUBLIC_ENABLE_DEMO_MODE=false` for real-member builds.
-5. Add `delos://auth/update-password` and your web origin to Authentication → URL Configuration.
+5. Add `delos://auth/confirm`, `delos://auth/update-password`, and your web origin to Authentication → URL Configuration. Set the production Site URL to `https://delosmusic.app` so email links never fall back to localhost.
 6. Enable Realtime for the `messages` table.
 7. Deploy `supabase/functions/push-notifications`, set a `WEBHOOK_SECRET`, and connect an authenticated Database Webhook on notification inserts. Service-role credentials belong only in the Edge Function environment.
 8. Assign moderation access only through the SQL editor or a trusted server (`update public.users set role='moderator' where id='<trusted-user-uuid>';`). The moderation UI lives at `/moderation` and its RPC returns data only to moderator/admin accounts.
 9. Deploy the authenticated `export-account-data` Edge Function alongside `delete-account`. Apply migration `019` for support tickets, moderation auditing, account sanctions, and adult attestation.
-9. Optionally set `EXPO_PUBLIC_SENTRY_DSN` for crash reporting; Delos disables Sentry and sends no telemetry when it is blank.
+10. Optionally set `EXPO_PUBLIC_SENTRY_DSN` for crash reporting; Delos disables Sentry and sends no telemetry when it is blank.
 
 ### Stripe web subscriptions
 

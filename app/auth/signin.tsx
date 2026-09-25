@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button, Field, Header, Screen } from '@/components/ui';
 import { BrandLockup } from '@/components/BrandMark';
 import { signInSchema } from '@/domain/validation';
 import { useApp } from '@/store/AppContext';
 import { colors } from '@/theme';
+import { friendlyAuthError } from '@/domain/authMessages';
 export default function SignIn() {
   const { signIn } = useApp();
   const [loading, setLoading] = useState(false);
@@ -23,13 +24,16 @@ export default function SignIn() {
       await signIn(email, password);
       router.replace('/');
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Unable to sign in');
+      const message = friendlyAuthError(cause, 'Unable to sign in.');
+      setError(message);
+      if (message.includes('Confirm your email'))
+        router.push({ pathname: '/auth/check-email', params: { email: email.trim() } });
     } finally {
       setLoading(false);
     }
   };
   return (
-    <Screen>
+    <Screen style={styles.screen}>
       <BrandLockup compact slogan />
       <Header eyebrow="WELCOME BACK" title="Sign in" />
       <Field
@@ -38,22 +42,36 @@ export default function SignIn() {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        autoComplete="email"
+        textContentType="emailAddress"
+        returnKeyType="next"
       />
       <Field
         label="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        error={error}
+        autoComplete="current-password"
+        textContentType="password"
+        returnKeyType="done"
+        onSubmitEditing={() => void submit()}
       />
+      {!!error && <Text style={styles.error}>{error}</Text>}
       <Button label={loading ? 'Signing in…' : 'Sign in'} disabled={loading} onPress={submit} />
       <Button label="Forgot password?" variant="ghost" onPress={() => router.push('/auth/reset')} />
-      <Text style={{ color: colors.muted, textAlign: 'center' }}>
-        No account?{' '}
-        <Text style={{ color: colors.accent }} onPress={() => router.push('/auth/signup')}>
-          Create one
+      <View style={styles.createRow}>
+        <Text style={styles.secondary}>New to Delos?</Text>
+        <Text style={styles.link} onPress={() => router.push('/auth/signup')}>
+          Create an account
         </Text>
-      </Text>
+      </View>
     </Screen>
   );
 }
+const styles = StyleSheet.create({
+  screen: { justifyContent: 'center', maxWidth: 560 },
+  error: { color: colors.danger, fontWeight: '700' },
+  createRow: { flexDirection: 'row', justifyContent: 'center', gap: 5 },
+  secondary: { color: colors.muted },
+  link: { color: '#8A5100', fontWeight: '900' },
+});

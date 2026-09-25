@@ -26,6 +26,7 @@ type AppState = {
   enterDemo(): Promise<void>;
   signIn(email: string, password: string): Promise<void>;
   signUp(email: string, password: string, adultAttested: boolean): Promise<'confirmed' | 'verify'>;
+  resendVerification(email: string): Promise<void>;
   resetPassword(email: string): Promise<void>;
   signOut(): Promise<void>;
   finishOnboarding(profile: MusicianProfile): Promise<void>;
@@ -70,7 +71,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         (['http', 'https'].includes(parsed.scheme || '') &&
           parsed.scheme === expected.scheme &&
           parsed.hostname === expected.hostname);
-      if (!trustedOrigin || !['auth/signin', 'auth/update-password'].includes(path || '')) return;
+      if (!trustedOrigin || !['auth/confirm', 'auth/update-password'].includes(path || '')) return;
       const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : null;
       if (code) await supabase.auth.exchangeCodeForSession(code);
     };
@@ -161,26 +162,38 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         enableSupabaseRepository();
         await AsyncStorage.removeItem('delos:demo');
         setDemoMode(false);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
         if (error) throw error;
       },
       signUp: async (email, password, adultAttested) => {
         if (!supabase) throw new Error('Supabase is not configured.');
         if (!adultAttested) throw new Error('You must confirm that you are 18 or older.');
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: email.trim().toLowerCase(),
           password,
           options: {
-            emailRedirectTo: Linking.createURL('/auth/signin'),
+            emailRedirectTo: Linking.createURL('/auth/confirm'),
             data: { adult_attested_at: new Date().toISOString() },
           },
         });
         if (error) throw error;
         return data.session ? 'confirmed' : 'verify';
       },
+      resendVerification: async (email) => {
+        if (!supabase) throw new Error('Supabase is not configured.');
+        const { error } = await supabase.auth.resend({
+          type: 'signup',
+          email: email.trim().toLowerCase(),
+          options: { emailRedirectTo: Linking.createURL('/auth/confirm') },
+        });
+        if (error) throw error;
+      },
       resetPassword: async (email) => {
         if (!supabase) throw new Error('Supabase is not configured.');
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
           redirectTo: Linking.createURL('/auth/update-password'),
         });
         if (error) throw error;
