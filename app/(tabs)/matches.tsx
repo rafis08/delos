@@ -48,6 +48,7 @@ export default function Matches() {
                 initials={item.initials || '?'}
                 color={item.heroColor || colors.accent}
                 size={64}
+                uri={item.photoUri}
               />
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.displayName || 'Musician'}</Text>

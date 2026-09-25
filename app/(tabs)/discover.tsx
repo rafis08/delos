@@ -1,15 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  Share,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { Alert, Pressable, Share, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SwipeableProfileCard } from '@/components/SwipeableProfileCard';
 import { MainTabScreen } from '@/components/MainTabScreen';
 import { BrandLockup } from '@/components/BrandMark';
@@ -150,39 +142,42 @@ export default function Discover() {
     );
   if (!p)
     return (
-      <MainTabScreen tab="discover" scroll={false}>
-        <StateView
-          icon="musical-notes-outline"
-          title="Delos is growing in your area"
-          body="You’ve seen every compatible musician nearby. Invite someone you want to play with, expand your search, or explore active band calls."
-          action={
-            <View style={styles.emptyActions}>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() =>
-                  void Share.share({
-                    message:
-                      'Join me on Delos — find musicians who match your sound, schedule, location, and commitment. https://delosmusic.app',
-                  })
-                }
-                style={styles.emptyPrimary}
-              >
-                <Text style={styles.emptyPrimaryText}>INVITE A MUSICIAN</Text>
-              </Pressable>
-              <View style={styles.emptySecondaryRow}>
-                <Pressable onPress={() => router.push('/filters')} style={styles.emptySecondary}>
-                  <Text style={styles.emptySecondaryText}>Expand search</Text>
-                </Pressable>
+      <MainTabScreen tab="discover" scroll={false} style={styles.screen}>
+        <DiscoveryTop demoMode={demoMode} allowance={allowance} />
+        <View style={styles.emptyState}>
+          <StateView
+            icon="musical-notes-outline"
+            title="Delos is growing in your area"
+            body="You’ve seen every compatible musician nearby. Invite someone you want to play with, expand your search, or explore active band calls."
+            action={
+              <View style={styles.emptyActions}>
                 <Pressable
-                  onPress={() => router.push('/opportunities')}
-                  style={styles.emptySecondary}
+                  accessibilityRole="button"
+                  onPress={() =>
+                    void Share.share({
+                      message:
+                        'Join me on Delos — find musicians who match your sound, schedule, location, and commitment. https://delosmusic.app',
+                    })
+                  }
+                  style={styles.emptyPrimary}
                 >
-                  <Text style={styles.emptySecondaryText}>Band calls</Text>
+                  <Text style={styles.emptyPrimaryText}>INVITE A MUSICIAN</Text>
                 </Pressable>
+                <View style={styles.emptySecondaryRow}>
+                  <Pressable onPress={() => router.push('/filters')} style={styles.emptySecondary}>
+                    <Text style={styles.emptySecondaryText}>Expand search</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => router.push('/opportunities')}
+                    style={styles.emptySecondary}
+                  >
+                    <Text style={styles.emptySecondaryText}>Band calls</Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          }
-        />
+            }
+          />
+        </View>
       </MainTabScreen>
     );
   const c = calculateCompatibility(profile!, p);
@@ -192,46 +187,7 @@ export default function Discover() {
       scroll={false}
       style={[styles.screen, width > 900 && { maxWidth: 620 }]}
     >
-      <View style={styles.top}>
-        <BrandLockup compact slogan />
-        {demoMode && <Text style={styles.demoBadge}>DEMO</Text>}
-        <View style={styles.topActions}>
-          <IconButton
-            icon="megaphone-outline"
-            label="Band calls"
-            onPress={() => router.push('/opportunities')}
-          />
-          <IconButton
-            icon="options-outline"
-            label="Discovery filters"
-            onPress={() => router.push('/filters')}
-          />
-        </View>
-      </View>
-      <View style={styles.signalBar}>
-        <Pressable onPress={() => router.push('/likes-you')} style={styles.signalAction}>
-          <Text style={styles.signalStrong}>♥ LIKED YOU</Text>
-          <Text style={styles.signalMuted}>See your incoming signal</Text>
-        </Pressable>
-        <Pressable
-          onPress={() =>
-            router.push({ pathname: '/premium', params: { source: 'discovery-meter' } })
-          }
-          style={styles.signalAction}
-        >
-          <Text style={styles.signalStrong}>
-            ⚡{' '}
-            {allowance?.tier === 'amplified'
-              ? 'AMPLIFIED'
-              : `${allowance?.remaining ?? '—'} LIKES LEFT`}
-          </Text>
-          <Text style={styles.signalMuted}>
-            {allowance?.tier === 'amplified'
-              ? 'Unlimited discovery'
-              : 'Resets daily · Go unlimited'}
-          </Text>
-        </Pressable>
-      </View>
+      <DiscoveryTop demoMode={demoMode} allowance={allowance} />
       <View style={{ flex: 1 }}>
         <SwipeableProfileCard
           key={p.id}
@@ -291,6 +247,59 @@ export default function Discover() {
     </MainTabScreen>
   );
 }
+
+function DiscoveryTop({
+  demoMode,
+  allowance,
+}: {
+  demoMode: boolean;
+  allowance: LikeAllowance | null;
+}) {
+  return (
+    <>
+      <View style={styles.top}>
+        <BrandLockup compact slogan />
+        {demoMode && <Text style={styles.demoBadge}>DEMO</Text>}
+        <View style={styles.topActions}>
+          <IconButton
+            icon="megaphone-outline"
+            label="Band calls"
+            onPress={() => router.push('/opportunities')}
+          />
+          <IconButton
+            icon="options-outline"
+            label="Discovery filters"
+            onPress={() => router.push('/filters')}
+          />
+        </View>
+      </View>
+      <View style={styles.signalBar}>
+        <Pressable onPress={() => router.push('/likes-you')} style={styles.signalAction}>
+          <Text style={styles.signalStrong}>♥ LIKED YOU</Text>
+          <Text style={styles.signalMuted}>See your incoming signal</Text>
+        </Pressable>
+        <Pressable
+          onPress={() =>
+            router.push({ pathname: '/premium', params: { source: 'discovery-meter' } })
+          }
+          style={styles.signalAction}
+        >
+          <Text style={styles.signalStrong}>
+            ⚡{' '}
+            {allowance?.tier === 'amplified'
+              ? 'AMPLIFIED'
+              : `${allowance?.remaining ?? '—'} LIKES LEFT`}
+          </Text>
+          <Text style={styles.signalMuted}>
+            {allowance?.tier === 'amplified'
+              ? 'Unlimited discovery'
+              : 'Resets daily · Go unlimited'}
+          </Text>
+        </Pressable>
+      </View>
+    </>
+  );
+}
 const styles = StyleSheet.create({
   screen: { paddingHorizontal: 14, paddingTop: 8, paddingBottom: 8, gap: 8 },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -324,6 +333,7 @@ const styles = StyleSheet.create({
     gap: 10,
     minHeight: 58,
   },
+  emptyState: { flex: 1 },
   emptyActions: { width: '100%', maxWidth: 360, gap: 10, marginTop: 8 },
   emptyPrimary: {
     minHeight: 50,

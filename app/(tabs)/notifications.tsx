@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MainTabScreen } from '@/components/MainTabScreen';
-import { Header } from '@/components/ui';
+import { Button, Header, StateView } from '@/components/ui';
+import { router } from 'expo-router';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space } from '@/theme';
 export default function Notifications() {
@@ -16,23 +17,43 @@ export default function Notifications() {
   return (
     <MainTabScreen tab="notifications">
       <Header eyebrow="WHAT'S HAPPENING" title="Activity" />
-      {notifications.map((n) => (
-        <View key={n.id} style={[styles.item, !n.read && styles.unread]}>
-          <View style={styles.icon}>
-            <Ionicons
-              name={n.type === 'match' ? 'heart' : n.type === 'session' ? 'calendar' : 'chatbubble'}
-              color={colors.accent}
-              size={20}
-            />
+      {notifications.length === 0 ? (
+        <StateView
+          icon="notifications-outline"
+          title="Your activity starts here"
+          body="New matches, messages, rehearsal updates, and opportunities will appear here."
+          action={
+            <View style={styles.emptyActions}>
+              <Button label="Discover musicians" onPress={() => router.push('/(tabs)/discover')} />
+              <Button
+                label="Browse band calls"
+                variant="secondary"
+                onPress={() => router.push('/opportunities')}
+              />
+            </View>
+          }
+        />
+      ) : (
+        notifications.map((n) => (
+          <View key={n.id} style={[styles.item, !n.read && styles.unread]}>
+            <View style={styles.icon}>
+              <Ionicons
+                name={
+                  n.type === 'match' ? 'heart' : n.type === 'session' ? 'calendar' : 'chatbubble'
+                }
+                color={colors.accent}
+                size={20}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title}>{n.title}</Text>
+              <Text style={styles.body}>{n.body}</Text>
+              <Text style={styles.time}>{n.time}</Text>
+            </View>
+            {!n.read && <View style={styles.dot} />}
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{n.title}</Text>
-            <Text style={styles.body}>{n.body}</Text>
-            <Text style={styles.time}>{n.time}</Text>
-          </View>
-          {!n.read && <View style={styles.dot} />}
-        </View>
-      ))}
+        ))
+      )}
     </MainTabScreen>
   );
 }
@@ -51,4 +72,5 @@ const styles = StyleSheet.create({
   body: { color: colors.muted, marginTop: 3 },
   time: { color: colors.muted, fontSize: 11, marginTop: 7 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
+  emptyActions: { gap: 10, width: '100%', maxWidth: 320 },
 });

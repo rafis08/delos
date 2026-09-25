@@ -40,7 +40,11 @@ export default function Messages() {
                 onPress={() => router.push(`/chat/${item.id}`)}
                 style={styles.row}
               >
-                <Avatar initials={item.initials || '?'} color={item.heroColor || colors.accent} />
+                <Avatar
+                  initials={item.initials || '?'}
+                  color={item.heroColor || colors.accent}
+                  uri={item.photoUri}
+                />
                 <View style={{ flex: 1 }}>
                   <View style={styles.line}>
                     <Text style={styles.name}>{item.displayName || 'Musician'}</Text>

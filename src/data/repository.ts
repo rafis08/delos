@@ -352,7 +352,7 @@ export class SupabaseRepository implements DelosRepository {
   async listConversations() {
     const { data, error } = await this.client.rpc('my_conversations');
     if (error) throw error;
-    return rows(data).map((x) => ({
+    const conversations = rows(data).map((x) => ({
       id: String(x.id),
       profileId: String(x.profile_id),
       displayName: String(x.display_name),
@@ -362,6 +362,15 @@ export class SupabaseRepository implements DelosRepository {
       updatedAt: String(x.updated_at || ''),
       unread: Number(x.unread || 0),
     }));
+    return Promise.all(
+      conversations.map(async (conversation) => {
+        const profile = await this.getProfile(conversation.profileId).catch(() => null);
+        return {
+          ...conversation,
+          photoUri: profile?.media.find((item) => item.type === 'image' && item.uri)?.uri,
+        };
+      }),
+    );
   }
   async listMessages(id: string): Promise<Message[]> {
     const { data, error } = await this.client

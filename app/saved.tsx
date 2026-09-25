@@ -33,7 +33,11 @@ export default function Saved() {
             onPress={() => router.push(`/profile/${item.id}`)}
             style={styles.row}
           >
-            <Avatar initials={item.initials} color={item.heroColor} />
+            <Avatar
+              initials={item.initials}
+              color={item.heroColor}
+              uri={item.media.find((media) => media.type === 'image' && media.uri)?.uri}
+            />
             <View style={styles.copy}>
               <Text style={styles.name}>{item.displayName}</Text>
               <Text style={styles.meta}>

@@ -65,7 +65,12 @@ export default function LikesYou() {
             onPress={() => router.push(`/profile/${profile.id}`)}
             style={styles.person}
           >
-            <Avatar initials={profile.initials} color={profile.heroColor} size={62} />
+            <Avatar
+              initials={profile.initials}
+              color={profile.heroColor}
+              size={62}
+              uri={profile.media.find((item) => item.type === 'image' && item.uri)?.uri}
+            />
             <View style={{ flex: 1 }}>
               <Text style={styles.name}>
                 {profile.displayName}, {profile.age}

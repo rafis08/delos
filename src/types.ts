@@ -70,6 +70,7 @@ export type Conversation = {
   displayName?: string;
   initials?: string;
   heroColor?: string;
+  photoUri?: string;
   lastMessage: string;
   updatedAt: string;
   unread: number;

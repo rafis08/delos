@@ -35,7 +35,11 @@ export default function Blocked() {
       ) : (
         items.map((item) => (
           <View key={item.id} style={styles.row}>
-            <Avatar initials={item.initials} color={item.heroColor} />
+            <Avatar
+              initials={item.initials}
+              color={item.heroColor}
+              uri={item.media.find((media) => media.type === 'image' && media.uri)?.uri}
+            />
             <Text style={styles.name}>{item.displayName}</Text>
             <Button
               label="Unblock"
