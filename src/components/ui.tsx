@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -22,13 +22,24 @@ export function Screen({
   scroll = true,
   style,
   edges,
+  resetScrollKey,
 }: React.PropsWithChildren<{
   scroll?: boolean;
   style?: StyleProp<ViewStyle>;
   edges?: Edge[];
+  resetScrollKey?: string | number;
 }>) {
+  const scrollRef = useRef<ScrollView>(null);
+  useEffect(() => {
+    if (!scroll) return;
+    requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: 0, animated: false }));
+  }, [resetScrollKey, scroll]);
   const content = scroll ? (
-    <ScrollView contentContainerStyle={[styles.content, style]} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      ref={scrollRef}
+      contentContainerStyle={[styles.content, style]}
+      keyboardShouldPersistTaps="handled"
+    >
       {children}
     </ScrollView>
   ) : (

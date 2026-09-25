@@ -107,7 +107,7 @@ export default function Onboarding() {
     }
   };
   return (
-    <Screen>
+    <Screen resetScrollKey={step}>
       <View style={styles.progress}>
         <View style={[styles.progressFill, { width: `${(step + 1) * 20}%` }]} />
       </View>
@@ -340,6 +340,7 @@ export default function Onboarding() {
           <View style={styles.upload}>
             <Ionicons name="musical-notes" size={36} color={colors.accent} />
             <Text style={styles.uploadTitle}>Add a performance sample</Text>
+            <Text style={styles.optional}>OPTIONAL · YOU CAN ADD THIS LATER</Text>
             <Text style={styles.help}>Audio up to 25 MB · Video up to 100 MB</Text>
             <Button
               label="Choose audio or video"
@@ -472,6 +473,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   uploadTitle: { color: colors.text, ...type.h2 },
+  optional: { color: '#875000', fontSize: 11, fontWeight: '900', letterSpacing: 0.7 },
   file: {
     minHeight: 76,
     backgroundColor: colors.panel,
