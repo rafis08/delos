@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, space } from '@/theme';
@@ -11,8 +11,21 @@ const formatTime = (seconds: number) => {
 };
 
 export function AudioSamplePlayer({ uri, title }: { uri?: string; title: string }) {
-  const player = useAudioPlayer(uri || null, { updateInterval: 250, downloadFirst: true });
+  const player = useAudioPlayer(uri || null, {
+    updateInterval: 250,
+    downloadFirst: Boolean(uri?.startsWith('http')),
+    keepAudioSessionActive: true,
+  });
   const status = useAudioPlayerStatus(player);
+
+  useEffect(() => {
+    void setAudioModeAsync({
+      playsInSilentMode: true,
+      interruptionMode: 'doNotMix',
+      allowsRecording: false,
+      shouldPlayInBackground: false,
+    });
+  }, [player]);
 
   useEffect(() => {
     if (status.didJustFinish) void player.seekTo(0);
@@ -21,7 +34,13 @@ export function AudioSamplePlayer({ uri, title }: { uri?: string; title: string 
   const duration = status.duration || 0;
   const progress = duration ? Math.min(100, (status.currentTime / duration) * 100) : 0;
   const toggle = async () => {
-    if (!uri) return;
+    if (!uri || !status.isLoaded) return;
+    await setAudioModeAsync({
+      playsInSilentMode: true,
+      interruptionMode: 'doNotMix',
+      allowsRecording: false,
+      shouldPlayInBackground: false,
+    });
     if (status.didJustFinish || (duration && status.currentTime >= duration))
       await player.seekTo(0);
     if (status.playing) player.pause();
@@ -33,12 +52,16 @@ export function AudioSamplePlayer({ uri, title }: { uri?: string; title: string 
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${status.playing ? 'Pause' : 'Play'} ${title}`}
-        accessibilityState={{ disabled: !uri }}
-        disabled={!uri}
+        accessibilityState={{ disabled: !uri || !status.isLoaded }}
+        disabled={!uri || !status.isLoaded}
         onPress={() => void toggle()}
         style={({ pressed }) => [styles.play, pressed && { transform: [{ scale: 0.95 }] }]}
       >
-        <Ionicons name={status.playing ? 'pause' : 'play'} size={23} color={colors.accentInk} />
+        <Ionicons
+          name={!status.isLoaded ? 'hourglass' : status.playing ? 'pause' : 'play'}
+          size={23}
+          color={colors.accentInk}
+        />
       </Pressable>
       <View style={styles.details}>
         <Text numberOfLines={1} style={styles.title}>
@@ -53,7 +76,7 @@ export function AudioSamplePlayer({ uri, title }: { uri?: string; title: string 
               <View style={[styles.fill, { width: `${progress}%` }]} />
             </View>
             <Text style={styles.time}>
-              {status.isBuffering
+              {!status.isLoaded || status.isBuffering
                 ? 'Loading audio…'
                 : `${formatTime(status.currentTime)} / ${formatTime(duration)}`}
             </Text>
