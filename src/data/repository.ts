@@ -463,29 +463,44 @@ export class SupabaseRepository implements DelosRepository {
     if (error) throw error;
     const item = data?.[0] || data;
     return {
-      id: String(item.id), category: item.category, subject: String(item.subject),
-      description: String(item.description), status: item.status,
-      reference: String(item.reference), createdAt: String(item.created_at),
+      id: String(item.id),
+      category: item.category,
+      subject: String(item.subject),
+      description: String(item.description),
+      status: item.status,
+      reference: String(item.reference),
+      createdAt: String(item.created_at),
       updatedAt: String(item.updated_at),
     };
   }
   async listSupportTickets(): Promise<SupportTicket[]> {
     const { data, error } = await this.client
-      .from('support_tickets').select('*').order('created_at', { ascending: false });
+      .from('support_tickets')
+      .select('*')
+      .order('created_at', { ascending: false });
     if (error) throw error;
     return (data || []).map((item: Row) => ({
-      id: String(item.id), category: item.category as SupportTicketCategory,
-      subject: String(item.subject), description: String(item.description),
-      status: item.status as SupportTicket['status'], reference: String(item.reference),
-      createdAt: String(item.created_at), updatedAt: String(item.updated_at),
+      id: String(item.id),
+      category: item.category as SupportTicketCategory,
+      subject: String(item.subject),
+      description: String(item.description),
+      status: item.status as SupportTicket['status'],
+      reference: String(item.reference),
+      createdAt: String(item.created_at),
+      updatedAt: String(item.updated_at),
     }));
   }
   async clearApproximateLocation() {
     const user = (await this.client.auth.getUser()).data.user;
     if (!user) throw new Error('Sign in to change location privacy.');
-    const { error } = await this.client.from('discovery_preferences').update({
-      approximate_latitude: null, approximate_longitude: null, updated_at: new Date().toISOString(),
-    }).eq('user_id', user.id);
+    const { error } = await this.client
+      .from('discovery_preferences')
+      .update({
+        approximate_latitude: null,
+        approximate_longitude: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', user.id);
     if (error) throw error;
   }
   async uploadMedia(profileId: string, uri: string, mimeType: string, title: string) {
@@ -516,17 +531,40 @@ export class SupabaseRepository implements DelosRepository {
       : mimeType.startsWith('audio/')
         ? 'audio'
         : 'video';
-    const { error } = await this.client.from('media_samples').insert({
-      profile_id: profileId,
-      media_type: mediaType,
-      storage_path: path,
-      title,
-      mime_type: mimeType,
-      size_bytes: body.byteLength,
-    });
+    const { data: inserted, error } = await this.client
+      .from('media_samples')
+      .insert({
+        profile_id: profileId,
+        media_type: mediaType,
+        storage_path: path,
+        title,
+        mime_type: mimeType,
+        size_bytes: body.byteLength,
+      })
+      .select('id')
+      .single();
     if (error) {
       await this.client.storage.from('profile-media').remove([path]);
       throw error;
+    }
+    if (mediaType === 'image' && title === 'Profile photo') {
+      const { data: previous } = await this.client
+        .from('media_samples')
+        .select('id,storage_path')
+        .eq('profile_id', profileId)
+        .eq('media_type', 'image')
+        .eq('title', 'Profile photo')
+        .neq('id', inserted.id);
+      if (previous?.length) {
+        const ids = previous.map((item: Row) => String(item.id));
+        const paths = previous.map((item: Row) => String(item.storage_path)).filter(Boolean);
+        const { error: deleteError } = await this.client
+          .from('media_samples')
+          .delete()
+          .in('id', ids);
+        if (!deleteError && paths.length)
+          await this.client.storage.from('profile-media').remove(paths);
+      }
     }
   }
   async listNotifications() {

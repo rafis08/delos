@@ -1,5 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Header, Screen } from '@/components/ui';
@@ -111,6 +112,8 @@ export default function MediaManager() {
             <Text style={styles.type}>{item.type.toUpperCase()}</Text>
             {item.type === 'audio' ? (
               <AudioSamplePlayer uri={item.uri} title={item.title} />
+            ) : item.type === 'image' && item.uri ? (
+              <Image source={item.uri} contentFit="cover" style={styles.previewImage} />
             ) : (
               <Text style={styles.title}>{item.title}</Text>
             )}
@@ -143,4 +146,5 @@ const styles = StyleSheet.create({
   itemBody: { gap: 8 },
   type: { color: colors.accent, fontWeight: '900', fontSize: 11 },
   title: { flex: 1, color: colors.text, fontWeight: '700' },
+  previewImage: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md },
 });

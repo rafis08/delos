@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
 import {
   ActivityIndicator,
@@ -206,10 +207,12 @@ export function Avatar({
   initials,
   color,
   size = 52,
+  uri,
 }: {
   initials: string;
   color: string;
   size?: number;
+  uri?: string;
 }) {
   return (
     <View
@@ -219,8 +222,14 @@ export function Avatar({
         { width: size, height: size, borderRadius: size / 2, backgroundColor: color },
       ]}
     >
-      <View style={styles.avatarShade} />
-      <Text style={[styles.avatarText, { fontSize: size * 0.3 }]}>{initials}</Text>
+      {uri ? (
+        <Image source={uri} contentFit="cover" style={{ width: size, height: size }} />
+      ) : (
+        <>
+          <View style={styles.avatarShade} />
+          <Text style={[styles.avatarText, { fontSize: size * 0.3 }]}>{initials}</Text>
+        </>
+      )}
     </View>
   );
 }

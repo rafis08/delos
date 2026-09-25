@@ -230,7 +230,11 @@ export class DemoRepository {
   async report() {}
   async deleteAccount() {}
   async exportAccountData(): Promise<Record<string, unknown>> {
-    return { exportedAt: new Date().toISOString(), profile: this.profile, note: 'Demo data export' };
+    return {
+      exportedAt: new Date().toISOString(),
+      profile: this.profile,
+      note: 'Demo data export',
+    };
   }
   async createSupportTicket(input: {
     category: SupportTicketCategory;
@@ -240,15 +244,24 @@ export class DemoRepository {
   }): Promise<SupportTicket> {
     const now = new Date().toISOString();
     const ticket: SupportTicket = {
-      id: `demo-ticket-${Date.now()}`, category: input.category, subject: input.subject,
-      description: input.description, status: 'open', reference: `DEMO-${Date.now().toString().slice(-6)}`,
-      createdAt: now, updatedAt: now,
+      id: `demo-ticket-${Date.now()}`,
+      category: input.category,
+      subject: input.subject,
+      description: input.description,
+      status: 'open',
+      reference: `DEMO-${Date.now().toString().slice(-6)}`,
+      createdAt: now,
+      updatedAt: now,
     };
     this.supportTickets.unshift(ticket);
     return ticket;
   }
-  async listSupportTickets() { return this.supportTickets; }
-  async clearApproximateLocation() { this.profile = { ...this.profile, approximateCoordinates: undefined }; }
+  async listSupportTickets() {
+    return this.supportTickets;
+  }
+  async clearApproximateLocation() {
+    this.profile = { ...this.profile, approximateCoordinates: undefined };
+  }
   async uploadMedia(_profileId: string, uri: string, mimeType: string, title: string) {
     const type = mimeType.startsWith('image/')
       ? 'image'
@@ -257,7 +270,14 @@ export class DemoRepository {
         : 'video';
     this.profile = {
       ...this.profile,
-      media: [...this.profile.media, { id: `demo-media-${Date.now()}`, type, title, uri }],
+      media: [
+        ...(type === 'image' && title === 'Profile photo'
+          ? this.profile.media.filter(
+              (item) => !(item.type === 'image' && item.title === 'Profile photo'),
+            )
+          : this.profile.media),
+        { id: `demo-media-${Date.now()}`, type, title, uri },
+      ],
     };
   }
   async listNotifications() {

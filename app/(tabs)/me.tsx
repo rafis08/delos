@@ -42,6 +42,7 @@ export default function Me() {
     Boolean(p.rehearsalFrequency),
   ];
   const completion = Math.round((signals.filter(Boolean).length / signals.length) * 100);
+  const profilePhoto = p.media.find((item) => item.type === 'image' && item.uri)?.uri;
   const next = !p.media.length
     ? {
         text: 'Add a performance sample so musicians can hear your sound.',
@@ -66,7 +67,7 @@ export default function Me() {
       <Header
         eyebrow={demoMode ? 'DEMO PROFILE · FICTIONAL DATA' : 'YOUR PROFILE'}
         title={p.displayName}
-        right={<Avatar initials={p.initials} color={p.heroColor} size={68} />}
+        right={<Avatar initials={p.initials} color={p.heroColor} size={68} uri={profilePhoto} />}
       />
       <View style={styles.completion}>
         <View style={{ flex: 1 }}>

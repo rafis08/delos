@@ -2,40 +2,25 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, Chips, Field, Header, Screen } from '@/components/ui';
+import { AudioSamplePlayer } from '@/components/AudioSamplePlayer';
 import { createBlankProfile } from '@/data/blankProfile';
-import { profileBasicsSchema } from '@/domain/validation';
+import { mediaRules, profileBasicsSchema, profileSchema } from '@/domain/validation';
+import { friendlyProfileIssue } from '@/domain/profileMessages';
+import {
+  commaList,
+  genreOptions,
+  influenceSuggestions,
+  instrumentOptions,
+} from '@/domain/profileOptions';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { Commitment, Goal } from '@/types';
 
-const instruments = [
-  'Vocals',
-  'Guitar',
-  'Drums',
-  'Bass',
-  'Keys',
-  'Saxophone',
-  'Violin',
-  'Producer',
-];
-const genres = [
-  'Alternative Rock',
-  'Indie',
-  'Punk',
-  'R&B',
-  'Neo-soul',
-  'Jazz',
-  'Funk',
-  'Electronic',
-  'Pop',
-  'Metal',
-  'Folk',
-  'Hip-hop',
-];
 const goals: Goal[] = ['Casual jams', 'Form a band', 'Join a band', 'Session work', 'Paid gigs'];
 const commitments: Commitment[] = ['Casual', 'Consistent', 'Serious', 'Professional'];
 const toggle = (list: string[], value: string) =>
@@ -46,28 +31,73 @@ export default function Onboarding() {
   const [p, setP] = useState(() => createBlankProfile(userId || ''));
   const [error, setError] = useState('');
   const [picked, setPicked] = useState<{ uri: string; mimeType: string; title: string }[]>([]);
+  const [influencesText, setInfluencesText] = useState('');
+  const [genreQuery, setGenreQuery] = useState('');
   const [saving, setSaving] = useState(false);
-  const next = () => {
+  const profilePhoto = picked.find((item) => item.title === 'Profile photo');
+  const next = async () => {
+    const nextProfile = { ...p, influences: commaList(influencesText) };
     if (step === 0) {
-      const v = profileBasicsSchema.safeParse(p);
+      const v = profileBasicsSchema.safeParse(nextProfile);
       if (!v.success) {
-        setError(v.error.issues[0]?.message || 'Complete each field');
+        setError(friendlyProfileIssue(v.error.issues[0]));
         return;
       }
     }
+    if (step === 1 && !nextProfile.genres.length)
+      return setError('Choose at least one genre that represents your sound.');
+    if (step === 2 && !nextProfile.goals.length)
+      return setError('Choose at least one goal for what you want to do on Delos.');
+    if (step === 2 && !nextProfile.desiredRoles.length)
+      return setError('Choose at least one musician or role you want to meet.');
+    if (step === 3 && !nextProfile.availability.length)
+      return setError('Choose at least one day you are usually available.');
+    setP(nextProfile);
     setError('');
-    if (step < 4) setStep(step + 1);
-    else {
+    if (step < 4) {
+      setStep(step + 1);
+    } else {
+      const completed = {
+        ...nextProfile,
+        initials: nextProfile.displayName
+          .split(/\s+/)
+          .map((part) => part[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase(),
+      };
+      const validation = profileSchema.safeParse(completed);
+      if (!validation.success) {
+        setError(friendlyProfileIssue(validation.error.issues[0]));
+        return;
+      }
       setSaving(true);
-      finishOnboarding(p)
-        .then(() =>
-          Promise.all(picked.map((item) => uploadMedia(item.uri, item.mimeType, item.title))),
-        )
-        .then(() => router.replace('/(tabs)/discover'))
-        .catch((cause) =>
-          setError(cause instanceof Error ? cause.message : 'Could not save profile'),
-        )
-        .finally(() => setSaving(false));
+      try {
+        await finishOnboarding(completed);
+        const failed: string[] = [];
+        for (const item of picked) {
+          try {
+            await uploadMedia(item.uri, item.mimeType, item.title);
+          } catch {
+            failed.push(item.title);
+          }
+        }
+        router.replace('/(tabs)/discover');
+        if (failed.length)
+          Alert.alert(
+            'Profile published',
+            'Your profile is live, but one media file did not upload. You can add it again from Profile media.',
+          );
+      } catch (cause) {
+        const raw = cause instanceof Error ? cause.message : '';
+        setError(
+          raw.toLowerCase().includes('row-level security')
+            ? 'Your session expired. Sign in again and retry.'
+            : raw || 'Your profile could not be published. Check your connection and try again.',
+        );
+      } finally {
+        setSaving(false);
+      }
     }
   };
   return (
@@ -90,8 +120,13 @@ export default function Onboarding() {
       {step === 0 && (
         <>
           <View style={styles.photo}>
-            <Ionicons name="person" size={42} color={colors.muted} />
+            {profilePhoto ? (
+              <Image source={profilePhoto.uri} contentFit="cover" style={styles.photoPreview} />
+            ) : (
+              <Ionicons name="person" size={42} color={colors.muted} />
+            )}
             <Pressable
+              style={profilePhoto && styles.photoReplace}
               onPress={async () => {
                 const r = await ImagePicker.launchImageLibraryAsync({
                   mediaTypes: ['images'],
@@ -99,10 +134,18 @@ export default function Onboarding() {
                 });
                 if (!r.canceled) {
                   const asset = r.assets[0]!;
+                  const mimeType = asset.mimeType || 'image/jpeg';
+                  if (
+                    !mediaRules.image.types.includes(mimeType as never) ||
+                    (asset.fileSize && asset.fileSize > mediaRules.image.maxBytes)
+                  ) {
+                    setError('Choose a JPEG, PNG, or WebP image smaller than 10 MB.');
+                    return;
+                  }
                   setPicked([
                     {
                       uri: asset.uri,
-                      mimeType: asset.mimeType || 'image/jpeg',
+                      mimeType,
                       title: 'Profile photo',
                     },
                     ...picked.filter((item) => item.title !== 'Profile photo'),
@@ -110,7 +153,9 @@ export default function Onboarding() {
                 }
               }}
             >
-              <Text style={styles.link}>ADD PROFILE PHOTO</Text>
+              <Text style={[styles.link, profilePhoto && styles.photoReplaceText]}>
+                {profilePhoto ? 'CHANGE PHOTO' : 'ADD PROFILE PHOTO'}
+              </Text>
             </Pressable>
           </View>
           <Field
@@ -159,8 +204,10 @@ export default function Onboarding() {
             multiline
             value={p.bio}
             onChangeText={(bio) => setP({ ...p, bio })}
-            error={error}
+            placeholder="Your sound, experience, and what you want to make…"
+            maxLength={500}
           />
+          <Text style={styles.counter}>{p.bio.length}/500 · minimum 20</Text>
           <Text style={styles.help}>Your exact address is never displayed.</Text>
         </>
       )}
@@ -168,27 +215,39 @@ export default function Onboarding() {
         <>
           <Text style={styles.label}>Primary instrument</Text>
           <Chips
-            items={instruments}
+            items={instrumentOptions}
             selected={[p.primaryInstrument]}
             onToggle={(primaryInstrument) => setP({ ...p, primaryInstrument })}
           />
           <Text style={styles.label}>Genres</Text>
+          <Field
+            label="Find a genre"
+            value={genreQuery}
+            onChangeText={setGenreQuery}
+            placeholder="Search rock, jazz, house…"
+          />
           <Chips
-            items={genres}
+            items={genreOptions.filter((genre) =>
+              genre.toLowerCase().includes(genreQuery.trim().toLowerCase()),
+            )}
             selected={p.genres}
             onToggle={(x) => setP({ ...p, genres: toggle(p.genres, x) })}
           />
+          {!!p.genres.length && <Text style={styles.help}>Selected: {p.genres.join(' · ')}</Text>}
           <Field
-            label="Influences (comma separated)"
-            value={p.influences.join(', ')}
-            onChangeText={(x) =>
-              setP({
-                ...p,
-                influences: x
-                  .split(',')
-                  .map((v) => v.trim())
-                  .filter(Boolean),
-              })
+            label="Musical influences"
+            value={influencesText}
+            onChangeText={setInfluencesText}
+            placeholder="Type artists, records, scenes, or eras separated by commas"
+          />
+          <Text style={styles.help}>
+            Tap a suggestion or type your own. Separate each with a comma.
+          </Text>
+          <Chips
+            items={influenceSuggestions}
+            selected={commaList(influencesText)}
+            onToggle={(influence) =>
+              setInfluencesText(toggle(commaList(influencesText), influence).join(', '))
             }
           />
           <Text style={styles.label}>Skill level</Text>
@@ -221,7 +280,7 @@ export default function Onboarding() {
           />
           <Text style={styles.label}>Roles you need</Text>
           <Chips
-            items={instruments}
+            items={instrumentOptions}
             selected={p.desiredRoles}
             onToggle={(x) => setP({ ...p, desiredRoles: toggle(p.desiredRoles, x) })}
           />
@@ -287,12 +346,14 @@ export default function Onboarding() {
                 if (!r.canceled) {
                   const asset = r.assets[0]!;
                   const mimeType = asset.mimeType || 'audio/mpeg';
-                  const limit = mimeType.startsWith('audio/')
-                    ? 25 * 1024 * 1024
-                    : 100 * 1024 * 1024;
-                  if (asset.size && asset.size > limit) {
+                  const kind = mimeType.startsWith('audio/') ? 'audio' : 'video';
+                  const rule = mediaRules[kind];
+                  if (
+                    !rule.types.includes(mimeType as never) ||
+                    (asset.size && asset.size > rule.maxBytes)
+                  ) {
                     setError(
-                      'That file is too large. Audio is limited to 25 MB and video to 100 MB.',
+                      'Choose an MP3, M4A, WAV, MP4, or MOV within the displayed size limits.',
                     );
                     return;
                   }
@@ -306,8 +367,28 @@ export default function Onboarding() {
           </View>
           {picked.map((x, i) => (
             <View key={`${x.uri}-${i}`} style={styles.file}>
-              <Ionicons name="checkmark-circle" color={colors.accent} />
-              <Text style={{ color: colors.text, flex: 1 }}>Media {i + 1} ready</Text>
+              {x.mimeType.startsWith('image/') ? (
+                <Image source={x.uri} contentFit="cover" style={styles.fileImage} />
+              ) : x.mimeType.startsWith('audio/') ? (
+                <View style={styles.filePlayer}>
+                  <AudioSamplePlayer uri={x.uri} title={x.title} />
+                </View>
+              ) : (
+                <View style={styles.fileVideo}>
+                  <Ionicons name="videocam" size={22} color={colors.accent} />
+                  <Text numberOfLines={1} style={styles.fileTitle}>
+                    {x.title}
+                  </Text>
+                </View>
+              )}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Remove ${x.title}`}
+                onPress={() => setPicked((items) => items.filter((_, index) => index !== i))}
+                style={styles.removeMedia}
+              >
+                <Ionicons name="close" size={20} color={colors.danger} />
+              </Pressable>
             </View>
           ))}
           <Text style={styles.disclosure}>
@@ -316,12 +397,17 @@ export default function Onboarding() {
           </Text>
         </>
       )}
+      {!!error && (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {error}
+        </Text>
+      )}
       <View style={styles.actions}>
         {step > 0 && <Button label="Back" variant="secondary" onPress={() => setStep(step - 1)} />}
         <View style={{ flex: 1 }}>
           <Button
             label={saving ? 'Publishing…' : step === 4 ? 'Start discovering' : 'Continue'}
-            onPress={next}
+            onPress={() => void next()}
             disabled={saving}
           />
         </View>
@@ -342,10 +428,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+    overflow: 'hidden',
   },
+  photoPreview: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  photoReplace: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+    backgroundColor: 'rgba(255,255,255,.94)',
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+  },
+  photoReplaceText: { color: '#7A4500' },
   link: { color: colors.accent, fontWeight: '900', fontSize: 12 },
   label: { color: colors.text, fontWeight: '800', fontSize: 15 },
   help: { color: colors.muted, ...type.small },
+  counter: { color: colors.muted, fontSize: 11, textAlign: 'right', marginTop: -14 },
   schedule: { flexDirection: 'row', justifyContent: 'space-between' },
   day: {
     width: 40,
@@ -368,12 +467,36 @@ const styles = StyleSheet.create({
   },
   uploadTitle: { color: colors.text, ...type.h2 },
   file: {
-    flexDirection: 'row',
-    gap: 8,
-    padding: 14,
+    minHeight: 76,
     backgroundColor: colors.panel,
     borderRadius: radius.md,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  fileImage: { width: '100%', height: 150 },
+  filePlayer: { padding: 10, paddingRight: 42 },
+  fileVideo: { minHeight: 76, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
+  fileTitle: { color: colors.text, flex: 1, fontWeight: '800' },
+  removeMedia: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,.94)',
   },
   disclosure: { color: colors.muted, ...type.small },
+  error: {
+    color: colors.danger,
+    backgroundColor: '#FFF0EE',
+    padding: space.md,
+    borderRadius: radius.md,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
   actions: { flexDirection: 'row', gap: 10, alignItems: 'center' },
 });

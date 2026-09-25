@@ -16,6 +16,7 @@ import {
   toggleValue,
 } from '@/domain/profileOptions';
 import { profileSchema } from '@/domain/validation';
+import { friendlyProfileIssue } from '@/domain/profileMessages';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { Availability, Commitment, Day, Goal, Skill } from '@/types';
@@ -46,6 +47,7 @@ export default function EditProfile() {
   const { profile, updateProfile, userId } = useApp();
   const [p, setP] = useState(profile || createBlankProfile(userId || ''));
   const [error, setError] = useState('');
+  const [influencesText, setInfluencesText] = useState(p.influences.join(', '));
   const [saving, setSaving] = useState(false);
 
   const updateAvailability = (day: Day, period: (typeof periodOptions)[number]) => {
@@ -60,6 +62,7 @@ export default function EditProfile() {
   const save = async () => {
     const next = {
       ...p,
+      influences: commaList(influencesText),
       initials: p.displayName
         .split(/\s+/)
         .map((part) => part[0])
@@ -68,8 +71,7 @@ export default function EditProfile() {
         .toUpperCase(),
     };
     const validation = profileSchema.safeParse(next);
-    if (!validation.success)
-      return setError(validation.error.issues[0]?.message || 'Check the form.');
+    if (!validation.success) return setError(friendlyProfileIssue(validation.error.issues[0]));
     try {
       setSaving(true);
       setError('');
@@ -182,9 +184,9 @@ export default function EditProfile() {
         />
         <Field
           label="Musical influences (comma separated)"
-          value={p.influences.join(', ')}
+          value={influencesText}
           placeholder="Artists, scenes, records, or eras"
-          onChangeText={(value) => setP({ ...p, influences: commaList(value) })}
+          onChangeText={setInfluencesText}
         />
         <Text style={styles.label}>Skill level</Text>
         <Chips

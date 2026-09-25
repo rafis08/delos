@@ -92,8 +92,12 @@ export default function FullProfile() {
         {photo?.uri && (
           <Image source={photo.uri} contentFit="cover" style={StyleSheet.absoluteFill} />
         )}
-        <View style={styles.disc} />
-        <Text style={styles.initials}>{p.initials}</Text>
+        {!photo?.uri && (
+          <>
+            <View style={styles.disc} />
+            <Text style={styles.initials}>{p.initials}</Text>
+          </>
+        )}
       </View>
       <Text style={styles.role}>
         {p.primaryInstrument} · {p.skill} · {p.location} · {p.distanceKm} km
