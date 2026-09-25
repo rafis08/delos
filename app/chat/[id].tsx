@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -24,6 +25,7 @@ export default function Chat() {
   const [error, setError] = useState('');
   const [proposals, setProposals] = useState<SessionProposal[]>([]);
   const { userId } = useApp();
+  const conversationRef = useRef<ScrollView>(null);
   useEffect(() => {
     if (!repository) {
       setMessages([]);
@@ -71,161 +73,175 @@ export default function Chat() {
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.ink }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
     >
-      <Screen scroll={false}>
+      <Screen scroll={false} style={styles.screen}>
         <Header title="Conversation" eyebrow="MATCHED" />
-        <View style={styles.nextActions}>
-          <Pressable onPress={() => router.push(`/proposal/${id}`)} style={styles.plan}>
-            <Ionicons name="calendar" color={colors.accent} />
-            <Text style={styles.planText}>Plan a session</Text>
-          </Pressable>
-          <Pressable onPress={() => router.push(`/room/${id}`)} style={styles.plan}>
-            <Ionicons name="albums" color={colors.accent} />
-            <Text style={styles.planText}>Band Room</Text>
-          </Pressable>
-        </View>
-        {proposals.map((proposal) => (
-          <View key={proposal.id} style={styles.proposal}>
-            <Text style={styles.proposalTitle}>
-              {proposal.kind} · {proposal.status.toUpperCase()}
-            </Text>
-            <Text style={styles.proposalText}>
-              {proposal.date} at {proposal.time}
-            </Text>
-            <Text style={styles.proposalText}>{proposal.location}</Text>
-            <Text style={styles.proposalText}>{proposal.songs.join(' · ')}</Text>
-            {proposal.status === 'pending' && (
-              <View style={styles.proposalActions}>
-                <Pressable
-                  onPress={async () => {
-                    await repository?.respondToProposal(proposal.id, 'declined');
-                    setProposals((items) =>
-                      items.map((item) =>
-                        item.id === proposal.id ? { ...item, status: 'declined' } : item,
-                      ),
-                    );
-                  }}
-                >
-                  <Text style={styles.decline}>Decline</Text>
-                </Pressable>
-                <Pressable
-                  onPress={async () => {
-                    await repository?.respondToProposal(proposal.id, 'accepted');
-                    void repository
-                      ?.trackEvent('session_accepted', { proposalId: proposal.id })
-                      .catch(() => undefined);
-                    setProposals((items) =>
-                      items.map((item) =>
-                        item.id === proposal.id ? { ...item, status: 'accepted' } : item,
-                      ),
-                    );
-                  }}
-                >
-                  <Text style={styles.accept}>Accept</Text>
-                </Pressable>
-              </View>
-            )}
-            {proposal.status === 'accepted' && (
-              <View style={styles.acceptedArea}>
-                <View style={styles.readyRow}>
-                  <Pressable
-                    onPress={() =>
-                      void addProposalToCalendar(proposal).catch((cause) =>
-                        setError(
-                          cause instanceof Error ? cause.message : 'Could not open calendar.',
-                        ),
-                      )
-                    }
-                  >
-                    <Text style={styles.accept}>Add to calendar</Text>
-                  </Pressable>
+        <ScrollView
+          ref={conversationRef}
+          style={styles.conversation}
+          contentContainerStyle={styles.conversationContent}
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => conversationRef.current?.scrollToEnd({ animated: true })}
+        >
+          <View style={styles.nextActions}>
+            <Pressable onPress={() => router.push(`/proposal/${id}`)} style={styles.plan}>
+              <Ionicons name="calendar" color={colors.accent} />
+              <Text style={styles.planText}>Plan a session</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(`/room/${id}`)} style={styles.plan}>
+              <Ionicons name="albums" color={colors.accent} />
+              <Text style={styles.planText}>Band Room</Text>
+            </Pressable>
+          </View>
+          {proposals.map((proposal) => (
+            <View key={proposal.id} style={styles.proposal}>
+              <Text style={styles.proposalTitle}>
+                {proposal.kind} · {proposal.status.toUpperCase()}
+              </Text>
+              <Text style={styles.proposalText}>
+                {proposal.date} at {proposal.time}
+              </Text>
+              <Text style={styles.proposalText}>{proposal.location}</Text>
+              <Text style={styles.proposalText}>{proposal.songs.join(' · ')}</Text>
+              {proposal.status === 'pending' && (
+                <View style={styles.proposalActions}>
                   <Pressable
                     onPress={async () => {
-                      const ready = !proposal.myReady;
-                      await repository?.setSessionReady(proposal.id, ready);
+                      await repository?.respondToProposal(proposal.id, 'declined');
                       setProposals((items) =>
                         items.map((item) =>
-                          item.id === proposal.id
-                            ? {
-                                ...item,
-                                myReady: ready,
-                                readyCount: Math.max(0, (item.readyCount || 0) + (ready ? 1 : -1)),
-                              }
-                            : item,
+                          item.id === proposal.id ? { ...item, status: 'declined' } : item,
                         ),
                       );
                     }}
-                    style={[styles.readyButton, proposal.myReady && styles.readyButtonActive]}
                   >
-                    <Text style={styles.readyText}>
-                      {proposal.myReady ? 'READY ✓' : "I'M READY"}
-                    </Text>
+                    <Text style={styles.decline}>Decline</Text>
                   </Pressable>
-                  <Text style={styles.readyCount}>{proposal.readyCount || 0}/2 ready</Text>
+                  <Pressable
+                    onPress={async () => {
+                      await repository?.respondToProposal(proposal.id, 'accepted');
+                      void repository
+                        ?.trackEvent('session_accepted', { proposalId: proposal.id })
+                        .catch(() => undefined);
+                      setProposals((items) =>
+                        items.map((item) =>
+                          item.id === proposal.id ? { ...item, status: 'accepted' } : item,
+                        ),
+                      );
+                    }}
+                  >
+                    <Text style={styles.accept}>Accept</Text>
+                  </Pressable>
                 </View>
-                {proposal.startsAt && new Date(proposal.startsAt) < new Date() && (
-                  <View style={styles.outcome}>
-                    <Text style={styles.outcomeTitle}>Did this session happen?</Text>
-                    <Text style={styles.outcomeBody}>
-                      Your private confirmation helps Delos measure real musical connections.
-                    </Text>
-                    {proposal.myOutcome ? (
-                      <Text style={styles.outcomeSaved}>
-                        {proposal.myOutcome === 'happened'
-                          ? 'SESSION CONFIRMED ✓'
-                          : 'RESPONSE SAVED'}
+              )}
+              {proposal.status === 'accepted' && (
+                <View style={styles.acceptedArea}>
+                  <View style={styles.readyRow}>
+                    <Pressable
+                      onPress={() =>
+                        void addProposalToCalendar(proposal).catch((cause) =>
+                          setError(
+                            cause instanceof Error ? cause.message : 'Could not open calendar.',
+                          ),
+                        )
+                      }
+                    >
+                      <Text style={styles.accept}>Add to calendar</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={async () => {
+                        const ready = !proposal.myReady;
+                        await repository?.setSessionReady(proposal.id, ready);
+                        setProposals((items) =>
+                          items.map((item) =>
+                            item.id === proposal.id
+                              ? {
+                                  ...item,
+                                  myReady: ready,
+                                  readyCount: Math.max(
+                                    0,
+                                    (item.readyCount || 0) + (ready ? 1 : -1),
+                                  ),
+                                }
+                              : item,
+                          ),
+                        );
+                      }}
+                      style={[styles.readyButton, proposal.myReady && styles.readyButtonActive]}
+                    >
+                      <Text style={styles.readyText}>
+                        {proposal.myReady ? 'READY ✓' : "I'M READY"}
                       </Text>
-                    ) : (
-                      <View style={styles.proposalActions}>
-                        <Pressable onPress={() => void confirmOutcome(proposal, 'did_not_happen')}>
-                          <Text style={styles.decline}>Not this time</Text>
-                        </Pressable>
-                        <Pressable onPress={() => void confirmOutcome(proposal, 'happened')}>
-                          <Text style={styles.accept}>Yes, we played</Text>
-                        </Pressable>
-                      </View>
-                    )}
+                    </Pressable>
+                    <Text style={styles.readyCount}>{proposal.readyCount || 0}/2 ready</Text>
                   </View>
-                )}
-              </View>
-            )}
-          </View>
-        ))}
-        {messages?.length === 0 && (
-          <View style={styles.starters}>
-            <Text style={styles.starterLabel}>START WITH SOMETHING REAL</Text>
-            {[
-              'What are you rehearsing right now?',
-              'Which weeknight usually works for you?',
-              'Want to trade three-song references?',
-            ].map((prompt) => (
-              <Pressable key={prompt} onPress={() => setBody(prompt)} style={styles.starter}>
-                <Text style={styles.starterText}>{prompt}</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-        {messages === null ? (
-          <StateView loading title="Loading messages" body="Getting the conversation…" />
-        ) : (
-          <View style={styles.messages}>
-            {messages.map((m) => (
-              <View
-                key={m.id}
-                style={[styles.bubble, m.senderId === userId ? styles.mine : styles.theirs]}
-              >
-                <Text
-                  style={[styles.message, m.senderId === userId && { color: colors.accentInk }]}
+                  {proposal.startsAt && new Date(proposal.startsAt) < new Date() && (
+                    <View style={styles.outcome}>
+                      <Text style={styles.outcomeTitle}>Did this session happen?</Text>
+                      <Text style={styles.outcomeBody}>
+                        Your private confirmation helps Delos measure real musical connections.
+                      </Text>
+                      {proposal.myOutcome ? (
+                        <Text style={styles.outcomeSaved}>
+                          {proposal.myOutcome === 'happened'
+                            ? 'SESSION CONFIRMED ✓'
+                            : 'RESPONSE SAVED'}
+                        </Text>
+                      ) : (
+                        <View style={styles.proposalActions}>
+                          <Pressable
+                            onPress={() => void confirmOutcome(proposal, 'did_not_happen')}
+                          >
+                            <Text style={styles.decline}>Not this time</Text>
+                          </Pressable>
+                          <Pressable onPress={() => void confirmOutcome(proposal, 'happened')}>
+                            <Text style={styles.accept}>Yes, we played</Text>
+                          </Pressable>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
+          ))}
+          {messages?.length === 0 && (
+            <View style={styles.starters}>
+              <Text style={styles.starterLabel}>START WITH SOMETHING REAL</Text>
+              {[
+                'What are you rehearsing right now?',
+                'Which weeknight usually works for you?',
+                'Want to trade three-song references?',
+              ].map((prompt) => (
+                <Pressable key={prompt} onPress={() => setBody(prompt)} style={styles.starter}>
+                  <Text style={styles.starterText}>{prompt}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          {messages === null ? (
+            <StateView loading title="Loading messages" body="Getting the conversation…" />
+          ) : (
+            <View style={styles.messages}>
+              {messages.map((m) => (
+                <View
+                  key={m.id}
+                  style={[styles.bubble, m.senderId === userId ? styles.mine : styles.theirs]}
                 >
-                  {m.body}
-                </Text>
-                <Text style={[styles.time, m.senderId === userId && { color: '#5B3700' }]}>
-                  {m.createdAt}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
+                  <Text
+                    style={[styles.message, m.senderId === userId && { color: colors.accentInk }]}
+                  >
+                    {m.body}
+                  </Text>
+                  <Text style={[styles.time, m.senderId === userId && { color: '#5B3700' }]}>
+                    {m.createdAt}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
         {error && <Text style={styles.error}>{error}</Text>}
         <View style={styles.composer}>
           <TextInput
@@ -264,6 +280,9 @@ export default function Chat() {
   }
 }
 const styles = StyleSheet.create({
+  screen: { paddingBottom: 10, gap: 12 },
+  conversation: { flex: 1 },
+  conversationContent: { flexGrow: 1, gap: 12, justifyContent: 'flex-end' },
   nextActions: { flexDirection: 'row', gap: 8 },
   plan: {
     flex: 1,
@@ -316,7 +335,7 @@ const styles = StyleSheet.create({
   readyButtonActive: { backgroundColor: colors.accent },
   readyText: { color: '#6B3C00', fontWeight: '900', fontSize: 11 },
   readyCount: { color: colors.muted, fontWeight: '700', fontSize: 11 },
-  messages: { flex: 1, gap: 10, justifyContent: 'flex-end' },
+  messages: { gap: 10, justifyContent: 'flex-end' },
   bubble: { maxWidth: '82%', padding: 13, borderRadius: 18, gap: 5 },
   mine: { backgroundColor: colors.accent, alignSelf: 'flex-end', borderBottomRightRadius: 5 },
   theirs: { backgroundColor: colors.raised, alignSelf: 'flex-start', borderBottomLeftRadius: 5 },

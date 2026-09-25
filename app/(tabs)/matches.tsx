@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Avatar, Header, Screen, StateView } from '@/components/ui';
+import { MainTabScreen } from '@/components/MainTabScreen';
+import { Avatar, Header, StateView } from '@/components/ui';
 import { repository } from '@/data/repository';
 import { colors, radius, space } from '@/theme';
 import { Conversation } from '@/types';
@@ -24,7 +25,7 @@ export default function Matches() {
       });
   }, []);
   return (
-    <Screen scroll={false}>
+    <MainTabScreen tab="matches" scroll={false}>
       <Header eyebrow="MUTUAL INTEREST" title="Matches" />
       {list === null ? (
         <StateView loading title="Loading matches" body="Checking for mutual interest…" />
@@ -64,7 +65,7 @@ export default function Matches() {
           )}
         />
       )}
-    </Screen>
+    </MainTabScreen>
   );
 }
 const styles = StyleSheet.create({

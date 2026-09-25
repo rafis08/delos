@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MusicianProfile } from '@/types';
-import { colors, radius, shadow, space } from '@/theme';
+import { colors, radius, shadow } from '@/theme';
 import { Chip } from './ui';
 import { TrustSignals } from './TrustSignals';
 
@@ -13,10 +13,12 @@ export function ProfileCard({
   profile,
   score,
   explanation,
+  compact = false,
 }: {
   profile: MusicianProfile;
   score: number;
   explanation: string;
+  compact?: boolean;
 }) {
   const photo = profile.media.find((item) => item.type === 'image' && item.uri);
   return (
@@ -50,13 +52,15 @@ export function ProfileCard({
           <Text style={styles.metaText}>{profile.lastActive}</Text>
         </View>
         <View style={styles.chips}>
-          {[...new Set(profile.genres)].slice(0, 2).map((g) => (
+          {[...new Set(profile.genres)].slice(0, compact ? 1 : 2).map((g) => (
             <Chip key={g} label={g} />
           ))}
           {profile.availableNow && <Chip label="Available now" />}
         </View>
-        <Text style={styles.explanation}>{explanation}</Text>
-        <TrustSignals profile={profile} compact />
+        <Text numberOfLines={compact ? 2 : 3} style={styles.explanation}>
+          {explanation}
+        </Text>
+        {!compact && <TrustSignals profile={profile} compact />}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Open ${profile.displayName}'s full profile`}
@@ -82,9 +86,9 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   art: {
-    flexBasis: '47%',
+    flexBasis: '42%',
     flexShrink: 1,
-    minHeight: 190,
+    minHeight: 142,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -98,7 +102,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,.16)',
   },
   initials: { color: colors.accentInk, fontSize: 92, fontWeight: '900', letterSpacing: -7 },
-  overlay: { flexGrow: 1, padding: space.md, gap: 5, backgroundColor: colors.panel },
+  overlay: { flexGrow: 1, padding: 13, gap: 4, backgroundColor: colors.panel },
   match: {
     alignSelf: 'flex-start',
     backgroundColor: colors.accent,
@@ -109,13 +113,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   matchText: { color: colors.accentInk, fontSize: 12, fontWeight: '900' },
-  name: { color: colors.text, fontSize: 26, lineHeight: 29, fontWeight: '800' },
+  name: { color: colors.text, fontSize: 24, lineHeight: 27, fontWeight: '800' },
   role: { color: colors.text, fontSize: 15, fontWeight: '700' },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   metaText: { color: colors.muted, fontSize: 14 },
   dot: { color: colors.muted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 5 },
   explanation: { color: colors.text, fontSize: 12, lineHeight: 16, marginTop: 2 },
-  moreButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5 },
-  more: { color: colors.accent, fontSize: 12, fontWeight: '900', letterSpacing: 0.7, marginTop: 2 },
+  moreButton: {
+    alignSelf: 'stretch',
+    minHeight: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 5,
+    marginTop: 'auto',
+  },
+  more: { color: colors.accent, fontSize: 12, fontWeight: '900', letterSpacing: 0.7 },
 });

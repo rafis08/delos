@@ -13,13 +13,19 @@ import {
   ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { Edge } from 'react-native-safe-area-context';
 import { colors, radius, space, type } from '@/theme';
 
 export function Screen({
   children,
   scroll = true,
   style,
-}: React.PropsWithChildren<{ scroll?: boolean; style?: StyleProp<ViewStyle> }>) {
+  edges,
+}: React.PropsWithChildren<{
+  scroll?: boolean;
+  style?: StyleProp<ViewStyle>;
+  edges?: Edge[];
+}>) {
   const content = scroll ? (
     <ScrollView contentContainerStyle={[styles.content, style]} keyboardShouldPersistTaps="handled">
       {children}
@@ -27,7 +33,11 @@ export function Screen({
   ) : (
     <View style={[styles.content, { flex: 1 }, style]}>{children}</View>
   );
-  return <SafeAreaView style={styles.safe}>{content}</SafeAreaView>;
+  return (
+    <SafeAreaView edges={edges} style={styles.safe}>
+      {content}
+    </SafeAreaView>
+  );
 }
 export function Header({
   title,

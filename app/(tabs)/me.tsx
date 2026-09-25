@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useCallback, useState } from 'react';
-import { Avatar, Button, Chip, Header, Screen, SettingRow, StateView } from '@/components/ui';
+import { MainTabScreen } from '@/components/MainTabScreen';
+import { Avatar, Button, Chip, Header, SettingRow, StateView } from '@/components/ui';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { repository } from '@/data/repository';
@@ -21,14 +22,14 @@ export default function Me() {
   const p = profile;
   if (!p)
     return (
-      <Screen scroll={false}>
+      <MainTabScreen tab="me" scroll={false}>
         <StateView
           icon="person-outline"
           title="Complete your profile"
           body="Add your musician details to appear in discovery."
           action={<Button label="Start profile" onPress={() => router.push('/onboarding')} />}
         />
-      </Screen>
+      </MainTabScreen>
     );
   const signals = [
     Boolean(p.bio.trim()),
@@ -61,7 +62,7 @@ export default function Me() {
             route: '/opportunities' as const,
           };
   return (
-    <Screen>
+    <MainTabScreen tab="me">
       <Header
         eyebrow={demoMode ? 'DEMO PROFILE · FICTIONAL DATA' : 'YOUR PROFILE'}
         title={p.displayName}
@@ -155,7 +156,7 @@ export default function Me() {
           onPress={() => router.push('/premium')}
         />
       </View>
-    </Screen>
+    </MainTabScreen>
   );
 }
 const styles = StyleSheet.create({

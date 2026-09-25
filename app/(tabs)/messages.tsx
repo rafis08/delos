@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Avatar, Header, Screen, StateView } from '@/components/ui';
+import { MainTabScreen } from '@/components/MainTabScreen';
+import { Avatar, Header, StateView } from '@/components/ui';
 import { repository } from '@/data/repository';
 import { colors, space } from '@/theme';
 import { Conversation } from '@/types';
@@ -18,7 +19,7 @@ export default function Messages() {
       .catch(() => setItems([]));
   }, []);
   return (
-    <Screen scroll={false}>
+    <MainTabScreen tab="messages" scroll={false}>
       <Header eyebrow="KEEP IT MOVING" title="Messages" />
       {items === null ? (
         <StateView loading title="Loading conversations" body="Getting the latest…" />
@@ -65,7 +66,7 @@ export default function Messages() {
           }}
         />
       )}
-    </Screen>
+    </MainTabScreen>
   );
 }
 const styles = StyleSheet.create({

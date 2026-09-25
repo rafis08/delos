@@ -16,10 +16,11 @@ type Props = {
   profile: MusicianProfile;
   score: number;
   explanation: string;
+  compact?: boolean;
   onDecision: (decision: 'like' | 'pass') => void;
 };
 
-export function SwipeableProfileCard({ profile, score, explanation, onDecision }: Props) {
+export function SwipeableProfileCard({ profile, score, explanation, compact, onDecision }: Props) {
   const { width } = useWindowDimensions();
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -75,7 +76,12 @@ export function SwipeableProfileCard({ profile, score, explanation, onDecision }
       <View style={styles.backCard} />
       <GestureDetector gesture={gesture}>
         <Animated.View style={[styles.card, cardStyle]}>
-          <ProfileCard profile={profile} score={score} explanation={explanation} />
+          <ProfileCard
+            profile={profile}
+            score={score}
+            explanation={explanation}
+            compact={compact}
+          />
           <Animated.View pointerEvents="none" style={[styles.stamp, styles.like, likeStyle]}>
             <Text style={styles.likeText}>CONNECT</Text>
           </Animated.View>

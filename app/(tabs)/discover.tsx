@@ -3,8 +3,9 @@ import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SwipeableProfileCard } from '@/components/SwipeableProfileCard';
+import { MainTabScreen } from '@/components/MainTabScreen';
 import { BrandLockup } from '@/components/BrandMark';
-import { IconButton, Screen, StateView } from '@/components/ui';
+import { IconButton, StateView } from '@/components/ui';
 import { repository } from '@/data/repository';
 import { calculateCompatibility, satisfiesHardRequirements } from '@/domain/compatibility';
 import { useApp } from '@/store/AppContext';
@@ -27,7 +28,7 @@ export default function Discover() {
   const [prefs, setPrefs] = useState(defaultPrefs);
   const [allowance, setAllowance] = useState<LikeAllowance | null>(null);
   const [lastDecision, setLastDecision] = useState<'like' | 'pass' | null>(null);
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const profiles = useMemo(
     () =>
       profile
@@ -115,33 +116,33 @@ export default function Discover() {
   };
   if (loading)
     return (
-      <Screen scroll={false}>
+      <MainTabScreen tab="discover" scroll={false}>
         <StateView
           loading
           title="Tuning recommendations"
           body="Comparing your sound, schedule, and goals…"
         />
-      </Screen>
+      </MainTabScreen>
     );
   if (offline)
     return (
-      <Screen scroll={false}>
+      <MainTabScreen tab="discover" scroll={false}>
         <StateView
           icon="cloud-offline-outline"
           title="You’re offline"
           body="Your saved matches and messages are still available. Discovery will resume when you reconnect."
         />
-      </Screen>
+      </MainTabScreen>
     );
   if (error)
     return (
-      <Screen scroll={false}>
+      <MainTabScreen tab="discover" scroll={false}>
         <StateView icon="warning-outline" title="Discovery unavailable" body={error} />
-      </Screen>
+      </MainTabScreen>
     );
   if (!p)
     return (
-      <Screen scroll={false}>
+      <MainTabScreen tab="discover" scroll={false}>
         <StateView
           icon="checkmark-done"
           title="You’re all caught up"
@@ -154,11 +155,15 @@ export default function Discover() {
             />
           }
         />
-      </Screen>
+      </MainTabScreen>
     );
   const c = calculateCompatibility(profile!, p);
   return (
-    <Screen scroll={false} style={[styles.screen, width > 900 && { maxWidth: 620 }]}>
+    <MainTabScreen
+      tab="discover"
+      scroll={false}
+      style={[styles.screen, width > 900 && { maxWidth: 620 }]}
+    >
       <View style={styles.top}>
         <BrandLockup compact slogan />
         {demoMode && <Text style={styles.demoBadge}>DEMO</Text>}
@@ -205,6 +210,7 @@ export default function Discover() {
           profile={p}
           score={c.score}
           explanation={c.explanation}
+          compact={height < 780}
           onDecision={decide}
         />
       </View>
@@ -254,7 +260,7 @@ export default function Discover() {
           onPress={() => decide('like')}
         />
       </View>
-    </Screen>
+    </MainTabScreen>
   );
 }
 const styles = StyleSheet.create({

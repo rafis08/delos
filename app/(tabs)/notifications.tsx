@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Header, Screen } from '@/components/ui';
+import { MainTabScreen } from '@/components/MainTabScreen';
+import { Header } from '@/components/ui';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space } from '@/theme';
 export default function Notifications() {
@@ -13,7 +14,7 @@ export default function Notifications() {
     return () => clearTimeout(t);
   }, [unread, markNotificationsRead]);
   return (
-    <Screen>
+    <MainTabScreen tab="notifications">
       <Header eyebrow="WHAT'S HAPPENING" title="Activity" />
       {notifications.map((n) => (
         <View key={n.id} style={[styles.item, !n.read && styles.unread]}>
@@ -32,7 +33,7 @@ export default function Notifications() {
           {!n.read && <View style={styles.dot} />}
         </View>
       ))}
-    </Screen>
+    </MainTabScreen>
   );
 }
 const styles = StyleSheet.create({
