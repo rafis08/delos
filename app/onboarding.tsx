@@ -35,6 +35,7 @@ export default function Onboarding() {
   const [genreQuery, setGenreQuery] = useState('');
   const [saving, setSaving] = useState(false);
   const profilePhoto = picked.find((item) => item.title === 'Profile photo');
+  const performanceMedia = picked.filter((item) => item.title !== 'Profile photo');
   const next = async () => {
     const nextProfile = { ...p, influences: commaList(influencesText) };
     if (step === 0) {
@@ -89,7 +90,12 @@ export default function Onboarding() {
             'Your profile is live, but one media file did not upload. You can add it again from Profile media.',
           );
       } catch (cause) {
-        const raw = cause instanceof Error ? cause.message : '';
+        const raw =
+          cause instanceof Error
+            ? cause.message
+            : typeof cause === 'object' && cause && 'message' in cause
+              ? String(cause.message)
+              : '';
         setError(
           raw.toLowerCase().includes('row-level security')
             ? 'Your session expired. Sign in again and retry.'
@@ -365,8 +371,8 @@ export default function Onboarding() {
               }}
             />
           </View>
-          {picked.map((x, i) => (
-            <View key={`${x.uri}-${i}`} style={styles.file}>
+          {performanceMedia.map((x) => (
+            <View key={x.uri} style={styles.file}>
               {x.mimeType.startsWith('image/') ? (
                 <Image source={x.uri} contentFit="cover" style={styles.fileImage} />
               ) : x.mimeType.startsWith('audio/') ? (
@@ -384,7 +390,7 @@ export default function Onboarding() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Remove ${x.title}`}
-                onPress={() => setPicked((items) => items.filter((_, index) => index !== i))}
+                onPress={() => setPicked((items) => items.filter((item) => item.uri !== x.uri))}
                 style={styles.removeMedia}
               >
                 <Ionicons name="close" size={20} color={colors.danger} />

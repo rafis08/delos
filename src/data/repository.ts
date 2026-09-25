@@ -203,7 +203,7 @@ export class SupabaseRepository implements DelosRepository {
     return data ? this.withMediaUrls(mapProfile(data)) : null;
   }
   async saveProfile(p: MusicianProfile) {
-    const { error } = await this.client.from('musician_profiles').upsert({
+    const payload = {
       user_id: p.id,
       display_name: p.displayName,
       age: p.age,
@@ -224,7 +224,16 @@ export class SupabaseRepository implements DelosRepository {
       public_links: p.links,
       available_now: p.availableNow,
       updated_at: new Date().toISOString(),
-    });
+    };
+    const { data: existing, error: lookupError } = await this.client
+      .from('musician_profiles')
+      .select('user_id')
+      .eq('user_id', p.id)
+      .maybeSingle();
+    if (lookupError) throw lookupError;
+    const { error } = existing
+      ? await this.client.from('musician_profiles').update(payload).eq('user_id', p.id)
+      : await this.client.from('musician_profiles').insert(payload);
     if (error) throw error;
     await Promise.all([
       this.client.from('availability').delete().eq('profile_id', p.id),
