@@ -12,6 +12,7 @@ import {
 import { MusicianProfile, NotificationItem, UserSettings } from '@/types';
 import { requestPushToken } from '@/services/push';
 import { demoModeEnabled } from '@/config/runtime';
+import { authRedirects } from '@/config/auth';
 import { authLinkRoute, establishSessionFromAuthLink } from '@/domain/authLinks';
 
 type AppState = {
@@ -182,7 +183,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
           email: email.trim().toLowerCase(),
           password,
           options: {
-            emailRedirectTo: Linking.createURL('/auth/confirm'),
+            emailRedirectTo: authRedirects.confirmEmail,
             data: { adult_attested_at: new Date().toISOString() },
           },
         });
@@ -194,14 +195,14 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         const { error } = await supabase.auth.resend({
           type: 'signup',
           email: email.trim().toLowerCase(),
-          options: { emailRedirectTo: Linking.createURL('/auth/confirm') },
+          options: { emailRedirectTo: authRedirects.confirmEmail },
         });
         if (error) throw error;
       },
       resetPassword: async (email) => {
         if (!supabase) throw new Error('Supabase is not configured.');
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-          redirectTo: Linking.createURL('/auth/update-password'),
+          redirectTo: authRedirects.updatePassword,
         });
         if (error) throw error;
       },
