@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
+import { router } from 'expo-router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { demoUser } from '@/data/demoData';
 import {
@@ -74,6 +75,9 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       if (!trustedOrigin || !authLinkRoute(url)) return;
       try {
         await establishSessionFromAuthLink(supabase, url);
+        if (authLinkRoute(url) === 'auth/update-password') {
+          router.replace('/auth/update-password');
+        }
       } catch {
         // The destination screen presents an actionable expired-link message.
       }

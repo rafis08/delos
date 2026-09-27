@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Field, Header, Screen } from '@/components/ui';
@@ -8,6 +8,7 @@ import { useApp } from '@/store/AppContext';
 import { colors } from '@/theme';
 import { friendlyAuthError } from '@/domain/authMessages';
 export default function SignIn() {
+  const { passwordChanged } = useLocalSearchParams<{ passwordChanged?: string }>();
   const { signIn } = useApp();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -36,6 +37,9 @@ export default function SignIn() {
     <Screen style={styles.screen}>
       <BrandLockup compact slogan />
       <Header eyebrow="WELCOME BACK" title="Sign in" />
+      {passwordChanged === 'true' && (
+        <Text style={styles.success}>Password updated. Sign in with your new password.</Text>
+      )}
       <Field
         label="Email"
         value={email}
@@ -71,6 +75,15 @@ export default function SignIn() {
 const styles = StyleSheet.create({
   screen: { justifyContent: 'center', maxWidth: 560 },
   error: { color: colors.danger, fontWeight: '700' },
+  success: {
+    color: '#675000',
+    backgroundColor: '#FFF4C7',
+    borderColor: '#E6BD32',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    fontWeight: '700',
+  },
   createRow: { flexDirection: 'row', justifyContent: 'center', gap: 5 },
   secondary: { color: colors.muted },
   link: { color: '#8A5100', fontWeight: '900' },

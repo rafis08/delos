@@ -93,10 +93,17 @@ export default function UpdatePassword() {
           if (!supabase) return setError('Supabase is not configured.');
           setSaving(true);
           const { error: updateError } = await supabase.auth.updateUser({ password });
-          setSaving(false);
-          if (updateError)
+          if (updateError) {
+            setSaving(false);
             return setError(friendlyAuthError(updateError, 'Could not update your password.'));
-          router.replace('/');
+          }
+          const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
+          setSaving(false);
+          if (signOutError)
+            return setError(
+              friendlyAuthError(signOutError, 'Your password changed. Return to sign in.'),
+            );
+          router.replace({ pathname: '/auth/signin', params: { passwordChanged: 'true' } });
         }}
       />
       {!sessionReady && !!error && (
