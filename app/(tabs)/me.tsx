@@ -146,6 +146,12 @@ export default function Me() {
           onPress={() => router.push('/filters')}
         />
         <SettingRow
+          icon="people"
+          title="Invite friends"
+          subtitle="5 musicians = 1 free month of Premium"
+          onPress={() => router.push('/invite')}
+        />
+        <SettingRow
           icon="settings"
           title="Settings & privacy"
           onPress={() => router.push('/settings')}

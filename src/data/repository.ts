@@ -18,6 +18,7 @@ import {
   ProductEventName,
   SupportTicket,
   SupportTicketCategory,
+  ReferralDashboard,
 } from '@/types';
 
 type Row = Record<string, unknown>;
@@ -177,6 +178,8 @@ export interface DelosRepository {
   ): Promise<CollaborationItem>;
   toggleCollaborationItem(id: string, completed: boolean): Promise<void>;
   deleteCollaborationItem(id: string): Promise<void>;
+  getReferralDashboard(): Promise<ReferralDashboard>;
+  qualifyMyReferral(): Promise<boolean>;
 }
 
 export class SupabaseRepository implements DelosRepository {
@@ -691,6 +694,9 @@ export class SupabaseRepository implements DelosRepository {
     if (error) throw error;
   }
   async getSubscriptionTier(): Promise<SubscriptionTier> {
+    const { data: entitled, error: entitlementError } =
+      await this.client.rpc('has_delos_music_pro');
+    if (!entitlementError && entitled) return 'amplified';
     const { data, error } = await this.client.from('subscription_status').select('tier').single();
     if (error) throw error;
     return data.tier;
@@ -874,6 +880,26 @@ export class SupabaseRepository implements DelosRepository {
       properties,
     });
     if (error) throw error;
+  }
+  async getReferralDashboard(): Promise<ReferralDashboard> {
+    const { data, error } = await this.client.rpc('my_referral_dashboard');
+    if (error) throw error;
+    const item = data?.[0] || data;
+    if (!item) throw new Error('Your invite code is still being prepared. Please try again.');
+    return {
+      code: String(item.code),
+      qualifiedCount: Number(item.qualified_count || 0),
+      pendingCount: Number(item.pending_count || 0),
+      rejectedCount: Number(item.rejected_count || 0),
+      rewardsEarned: Number(item.rewards_earned || 0),
+      rewardsQueued: Number(item.rewards_queued || 0),
+      progress: Number(item.progress || 0),
+    };
+  }
+  async qualifyMyReferral() {
+    const { data, error } = await this.client.rpc('qualify_my_referral');
+    if (error) throw error;
+    return Boolean(data);
   }
   async listCollaborationItems(conversationId: string): Promise<CollaborationItem[]> {
     const { data, error } = await this.client

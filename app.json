@@ -51,12 +51,21 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.delos-music.app",
+      "associatedDomains": ["applinks:delosmusic.app"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.delosmusic.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "delosmusic.app", "pathPrefix": "/invite" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/delos-guardian.png",
         "backgroundColor": "#FFFFFF"

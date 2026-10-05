@@ -383,6 +383,20 @@ export class DemoRepository {
     );
   }
   async trackEvent() {}
+  async getReferralDashboard() {
+    return {
+      code: 'DELOSMUSIC',
+      qualifiedCount: 3,
+      pendingCount: 1,
+      rejectedCount: 0,
+      rewardsEarned: 0,
+      rewardsQueued: 0,
+      progress: 3,
+    };
+  }
+  async qualifyMyReferral() {
+    return false;
+  }
   async listCollaborationItems(conversationId: string) {
     return this.collaborationItems.filter((item) => item.conversationId === conversationId);
   }

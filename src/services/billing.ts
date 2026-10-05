@@ -4,11 +4,30 @@ import { supabase } from '@/data/repository';
 
 export type BillingAvailability = 'stripe-web' | 'native-store' | 'native-store-unconfigured';
 export type BillingOffer = { price: string; period: string; configured: boolean };
+export type BillingPackage = {
+  identifier: string;
+  productIdentifier: string;
+  title: string;
+  price: string;
+  packageType: string;
+};
+export type BillingCustomer = {
+  appUserId: string;
+  isPro: boolean;
+  activeSubscriptions: string[];
+  managementUrl: string | null;
+};
+
+export const REVENUECAT_ENTITLEMENT = 'delos_music_pro';
 
 export interface BillingService {
   availability: BillingAvailability;
   getOffer(): Promise<BillingOffer>;
+  getPackages(): Promise<BillingPackage[]>;
+  getCustomerInfo(): Promise<BillingCustomer>;
+  hasProEntitlement(): Promise<boolean>;
   startSubscription(): Promise<void>;
+  purchasePackage(packageIdentifier: 'monthly' | 'yearly' | 'lifetime'): Promise<boolean>;
   manageSubscription(): Promise<void>;
   restorePurchases(): Promise<boolean>;
 }
@@ -27,7 +46,19 @@ const openFunctionUrl = async (
 const stripeWebBilling: BillingService = {
   availability: 'stripe-web',
   getOffer: async () => ({ price: '$9.99', period: 'month', configured: true }),
+  getPackages: async () => [],
+  getCustomerInfo: async () => ({
+    appUserId: '',
+    isPro: false,
+    activeSubscriptions: [],
+    managementUrl: null,
+  }),
+  hasProEntitlement: async () => false,
   startSubscription: () => openFunctionUrl('create-checkout-session'),
+  purchasePackage: async () => {
+    await openFunctionUrl('create-checkout-session');
+    return false;
+  },
   manageSubscription: () => openFunctionUrl('create-customer-portal'),
   restorePurchases: async () => false,
 };
@@ -56,6 +87,21 @@ async function syncNativeEntitlement() {
   if (error) throw error;
 }
 
+function hasPro(customerInfo: { entitlements: { active: Record<string, unknown> } }) {
+  return Boolean(customerInfo.entitlements.active[REVENUECAT_ENTITLEMENT]);
+}
+
+async function currentCustomer() {
+  const Purchases = await nativePurchases();
+  const info = await Purchases.getCustomerInfo();
+  return {
+    appUserId: info.originalAppUserId,
+    isPro: hasPro(info),
+    activeSubscriptions: info.activeSubscriptions,
+    managementUrl: info.managementURL,
+  } satisfies BillingCustomer;
+}
+
 const nativeStoreBilling: BillingService = {
   availability: revenueCatKey ? 'native-store' : 'native-store-unconfigured',
   async getOffer() {
@@ -66,26 +112,74 @@ const nativeStoreBilling: BillingService = {
     if (!offer) throw new Error('Amplified is not available from the App Store right now.');
     return { price: offer.product.priceString, period: 'month', configured: true };
   },
-  async startSubscription() {
+  async getPackages() {
     const Purchases = await nativePurchases();
     const offerings = await Purchases.getOfferings();
-    const offer = offerings.current?.monthly || offerings.current?.availablePackages[0];
-    if (!offer) throw new Error('Amplified is not available from the App Store right now.');
-    const { customerInfo } = await Purchases.purchasePackage(offer);
-    if (!customerInfo.entitlements.active.amplified)
-      throw new Error('The purchase completed without an Amplified entitlement.');
+    const offering = offerings.current;
+    if (!offering)
+      throw new Error('Premium plans are unavailable right now. Please try again later.');
+    return offering.availablePackages.map((item) => ({
+      identifier: item.identifier,
+      productIdentifier: item.product.identifier,
+      title: item.product.title,
+      price: item.product.priceString,
+      packageType: item.packageType,
+    }));
+  },
+  getCustomerInfo: currentCustomer,
+  async hasProEntitlement() {
+    return (await currentCustomer()).isPro;
+  },
+  async startSubscription() {
+    await nativePurchases();
+    const { default: RevenueCatUI, PAYWALL_RESULT } = await import('react-native-purchases-ui');
+    const result = await RevenueCatUI.presentPaywallIfNeeded({
+      requiredEntitlementIdentifier: REVENUECAT_ENTITLEMENT,
+      displayCloseButton: true,
+    });
+    if (result === PAYWALL_RESULT.CANCELLED || result === PAYWALL_RESULT.NOT_PRESENTED) return;
+    if (result === PAYWALL_RESULT.ERROR)
+      throw new Error('The App Store purchase screen could not be opened. Please try again.');
+    if (!(await currentCustomer()).isPro)
+      throw new Error('Your purchase is still processing. Use Restore Purchases in a moment.');
     await syncNativeEntitlement();
   },
-  async manageSubscription() {
+  async purchasePackage(packageIdentifier) {
     const Purchases = await nativePurchases();
-    const info = await Purchases.getCustomerInfo();
-    if (!info.managementURL) throw new Error('No App Store subscription is active.');
-    await Linking.openURL(info.managementURL);
+    const offerings = await Purchases.getOfferings();
+    const packages = offerings.current?.availablePackages || [];
+    const selected = packages.find(
+      (item) =>
+        item.identifier === `$rc_${packageIdentifier}` ||
+        item.identifier === packageIdentifier ||
+        item.product.identifier === packageIdentifier,
+    );
+    if (!selected) throw new Error(`${packageIdentifier} is not available from the App Store.`);
+    try {
+      const { customerInfo } = await Purchases.purchasePackage(selected);
+      const active = hasPro(customerInfo);
+      if (active) await syncNativeEntitlement();
+      return active;
+    } catch (cause) {
+      if (
+        typeof cause === 'object' &&
+        cause &&
+        'userCancelled' in cause &&
+        cause.userCancelled === true
+      )
+        return false;
+      throw cause;
+    }
+  },
+  async manageSubscription() {
+    await nativePurchases();
+    const { default: RevenueCatUI } = await import('react-native-purchases-ui');
+    await RevenueCatUI.presentCustomerCenter();
   },
   async restorePurchases() {
     const Purchases = await nativePurchases();
     const info = await Purchases.restorePurchases();
-    const active = Boolean(info.entitlements.active.amplified);
+    const active = hasPro(info);
     if (active) await syncNativeEntitlement();
     return active;
   },

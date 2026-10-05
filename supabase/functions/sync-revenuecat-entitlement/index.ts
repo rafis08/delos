@@ -28,7 +28,7 @@ Deno.serve(async (request) => {
   );
   if (!revenueCat.ok) return response({ error: 'Could not verify App Store purchase' }, 502);
   const subscriber = (await revenueCat.json()).subscriber;
-  const entitlement = subscriber?.entitlements?.amplified;
+  const entitlement = subscriber?.entitlements?.delos_music_pro;
   const expiresAt = entitlement?.expires_date || null;
   const active = Boolean(entitlement && (!expiresAt || new Date(expiresAt) > new Date()));
   const admin = createClient(

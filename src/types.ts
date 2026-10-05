@@ -98,7 +98,22 @@ export type ProductEventName =
   | 'session_accepted'
   | 'session_confirmed'
   | 'premium_viewed'
-  | 'checkout_started';
+  | 'checkout_started'
+  | 'referral_screen_viewed'
+  | 'referral_link_shared'
+  | 'referral_signup_started'
+  | 'referral_signup_completed'
+  | 'referral_qualified'
+  | 'referral_reward_earned';
+export type ReferralDashboard = {
+  code: string;
+  qualifiedCount: number;
+  pendingCount: number;
+  rejectedCount: number;
+  rewardsEarned: number;
+  rewardsQueued: number;
+  progress: number;
+};
 export type NotificationItem = {
   id: string;
   type: 'match' | 'message' | 'session';

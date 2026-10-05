@@ -18,7 +18,7 @@ Deno.serve(async (request) => {
   );
   if (!verified.ok) return new Response('Verification failed', { status: 502 });
   const subscriber = (await verified.json()).subscriber;
-  const entitlement = subscriber?.entitlements?.amplified;
+  const entitlement = subscriber?.entitlements?.delos_music_pro;
   const expiresAt = entitlement?.expires_date || null;
   const active = Boolean(entitlement && (!expiresAt || new Date(expiresAt) > new Date()));
   const admin = createClient(

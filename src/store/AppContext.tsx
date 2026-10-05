@@ -54,6 +54,19 @@ const needRepo = () => {
   if (!repository) throw new Error('The data service is not available.');
   return repository;
 };
+const referralCodeFromUrl = (url: string) => {
+  const path = Linking.parse(url).path || '';
+  const match = path.match(/^invite\/([A-Za-z0-9]{8,16})$/);
+  return match?.[1]?.toUpperCase() || null;
+};
+const getInstallId = async () => {
+  const key = 'delos:install-id';
+  const existing = await AsyncStorage.getItem(key);
+  if (existing) return existing;
+  const created = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  await AsyncStorage.setItem(key, created);
+  return created;
+};
 
 export function AppProvider({ children }: React.PropsWithChildren) {
   const [ready, setReady] = useState(false);
@@ -65,15 +78,28 @@ export function AppProvider({ children }: React.PropsWithChildren) {
 
   useEffect(() => {
     const handleAuthLink = async (url: string | null) => {
-      if (!url || !supabase) return;
+      if (!url) return;
       const parsed = Linking.parse(url);
       const expected = Linking.parse(Linking.createURL('/'));
       const trustedOrigin =
         parsed.scheme === 'delos' ||
+        (parsed.scheme === 'https' && parsed.hostname === 'delosmusic.app') ||
         (['http', 'https'].includes(parsed.scheme || '') &&
           parsed.scheme === expected.scheme &&
           parsed.hostname === expected.hostname);
-      if (!trustedOrigin || !authLinkRoute(url)) return;
+      if (!trustedOrigin) return;
+      const referralCode = referralCodeFromUrl(url);
+      if (referralCode) {
+        const existingSession = supabase ? (await supabase.auth.getSession()).data.session : null;
+        if (existingSession) {
+          router.push('/invite');
+          return;
+        }
+        await AsyncStorage.setItem('delos:referral-code', referralCode);
+        router.push({ pathname: '/auth/signup', params: { referral: referralCode } });
+        return;
+      }
+      if (!supabase || !authLinkRoute(url)) return;
       try {
         await establishSessionFromAuthLink(supabase, url);
         if (authLinkRoute(url) === 'auth/update-password') {
@@ -101,6 +127,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
           ]);
           setProfile(nextProfile);
           setNotifications(nextNotifications);
+          if (nextProfile) void repository.qualifyMyReferral().catch(() => undefined);
         } catch {
           setProfile(null);
           setNotifications([]);
@@ -179,15 +206,25 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       signUp: async (email, password, adultAttested) => {
         if (!supabase) throw new Error('Supabase is not configured.');
         if (!adultAttested) throw new Error('You must confirm that you are 18 or older.');
+        const [referralCode, installId] = await Promise.all([
+          AsyncStorage.getItem('delos:referral-code'),
+          getInstallId(),
+        ]);
         const { data, error } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
           options: {
             emailRedirectTo: authRedirects.confirmEmail,
-            data: { adult_attested_at: new Date().toISOString() },
+            data: {
+              adult_attested_at: new Date().toISOString(),
+              ...(referralCode
+                ? { referral_code: referralCode, referral_install_id: installId }
+                : {}),
+            },
           },
         });
         if (error) throw error;
+        if (referralCode) await AsyncStorage.removeItem('delos:referral-code');
         return data.session ? 'confirmed' : 'verify';
       },
       resendVerification: async (email) => {
@@ -218,6 +255,9 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         if (!userId) throw new Error('Your session expired. Please sign in again.');
         const saved = { ...next, id: userId };
         await needRepo().saveProfile(saved);
+        await needRepo()
+          .qualifyMyReferral()
+          .catch(() => false);
         setProfile(saved);
       },
       updateProfile: async (next) => {

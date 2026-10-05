@@ -67,7 +67,12 @@ export default function Settings() {
           subtitle="Visibility, location, blocked members, and safety"
           onPress={() => router.push('/privacy-controls')}
         />
-        <SettingRow icon="folder-open" title="Data & account" subtitle="Export or delete your Delos data" onPress={() => router.push('/data-rights')} />
+        <SettingRow
+          icon="folder-open"
+          title="Data & account"
+          subtitle="Export or delete your Delos data"
+          onPress={() => router.push('/data-rights')}
+        />
         <SettingRow
           icon="document-text"
           title="Privacy & community standards"
@@ -75,8 +80,24 @@ export default function Settings() {
         />
       </View>
       <View style={styles.group}>
-        <SettingRow icon="help-circle" title="Help & support" subtitle="FAQ, support requests, and request status" onPress={() => router.push('/support')} />
-        <SettingRow icon="book" title="FAQ" subtitle="Fast answers and safety guidance" onPress={() => router.push('/faq')} />
+        <SettingRow
+          icon="people"
+          title="Invite friends"
+          subtitle="Bring 5 musicians, earn 1 month of Premium"
+          onPress={() => router.push('/invite')}
+        />
+        <SettingRow
+          icon="help-circle"
+          title="Help & support"
+          subtitle="FAQ, support requests, and request status"
+          onPress={() => router.push('/support')}
+        />
+        <SettingRow
+          icon="book"
+          title="FAQ"
+          subtitle="Fast answers and safety guidance"
+          onPress={() => router.push('/faq')}
+        />
       </View>
       <Button
         label="Sign out"

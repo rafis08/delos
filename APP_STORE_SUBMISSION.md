@@ -119,19 +119,20 @@ Do not show unfinished UI, debug labels, personal data, placeholder content, And
 1. Create the app in App Store Connect with the final bundle ID.
 2. Accept Apple's Paid Applications agreement and complete banking/tax setup.
 3. Create one subscription group named **Delos Amplified**.
-4. Create monthly product ID `delos_amplified_monthly` at the chosen storefront price.
-5. Create a RevenueCat project, entitlement `amplified`, offering `default`, and attach the monthly App Store product as the monthly package.
-6. Put the RevenueCat **public iOS SDK key** in the EAS environment as `EXPO_PUBLIC_REVENUECAT_IOS_API_KEY`.
-7. Put the RevenueCat **secret API key** in Supabase Edge Function secrets as `REVENUECAT_SECRET_KEY`.
-8. Generate a random webhook authorization value and store it in Supabase as `REVENUECAT_WEBHOOK_SECRET`.
-9. Deploy `sync-revenuecat-entitlement` with JWT verification enabled and `revenuecat-webhook` with JWT verification disabled.
-10. Configure the RevenueCat webhook URL as `https://pfaotpeebrhmwmhadymw.supabase.co/functions/v1/revenuecat-webhook` with `Authorization: Bearer <REVENUECAT_WEBHOOK_SECRET>`.
-11. Test purchase, restore, expiration, cancellation, and cross-platform entitlement behavior with sandbox accounts.
+4. Create auto-renewable subscriptions with product IDs `monthly` and `yearly` inside that group.
+5. Create a non-consumable In-App Purchase with product ID `lifetime` outside the subscription group.
+6. Create a RevenueCat project, entitlement `delos_music_pro`, offering `default`, and attach the `monthly`, `yearly`, and `lifetime` App Store products to their matching packages.
+7. Put the RevenueCat **public iOS SDK key** in the build environment as `EXPO_PUBLIC_REVENUECAT_IOS_API_KEY`.
+8. Put the RevenueCat **secret API key** in Supabase Edge Function secrets as `REVENUECAT_SECRET_KEY`.
+9. Generate a random webhook authorization value and store it in Supabase as `REVENUECAT_WEBHOOK_SECRET`.
+10. Deploy `sync-revenuecat-entitlement` with JWT verification enabled and `revenuecat-webhook` with JWT verification disabled.
+11. Configure the RevenueCat webhook URL as `https://pfaotpeebrhmwmhadymw.supabase.co/functions/v1/revenuecat-webhook` with `Authorization: Bearer <REVENUECAT_WEBHOOK_SECRET>`.
+12. Test purchase, restore, expiration, cancellation, and cross-platform entitlement behavior with sandbox accounts.
 
 ### Subscription metadata
 
 - **Group reference name:** Delos Amplified
-- **Product ID:** `delos_amplified_monthly`
+- **Product IDs:** `monthly`, `yearly`, and `lifetime`
 - **Reference name:** Delos Amplified Monthly
 - **Display name:** Delos Amplified
 - **Description:** More tools to find your band faster.
