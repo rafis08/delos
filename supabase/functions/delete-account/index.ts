@@ -61,14 +61,16 @@ Deno.serve(async (request) => {
     }
   }
 
-  const mediaBucket = admin.storage.from('profile-media');
-  const { data: media, error: listError } = await mediaBucket.list(data.user.id, { limit: 1000 });
-  if (listError) return response({ error: 'Account deletion could not be completed' }, 500);
-  if (media?.length) {
-    const { error: storageError } = await mediaBucket.remove(
-      media.map((item) => `${data.user.id}/${item.name}`),
-    );
-    if (storageError) return response({ error: 'Account deletion could not be completed' }, 500);
+  for (const bucketName of ['profile-media', 'profile-photos']) {
+    const bucket = admin.storage.from(bucketName);
+    const { data: media, error: listError } = await bucket.list(data.user.id, { limit: 1000 });
+    if (listError) return response({ error: 'Account deletion could not be completed' }, 500);
+    if (media?.length) {
+      const { error: storageError } = await bucket.remove(
+        media.map((item) => `${data.user.id}/${item.name}`),
+      );
+      if (storageError) return response({ error: 'Account deletion could not be completed' }, 500);
+    }
   }
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(data.user.id);

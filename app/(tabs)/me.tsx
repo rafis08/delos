@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useCallback, useState } from 'react';
 import { MainTabScreen } from '@/components/MainTabScreen';
 import { Avatar, Button, Chip, Header, SettingRow, StateView } from '@/components/ui';
@@ -9,10 +9,12 @@ import { colors, radius, space, type } from '@/theme';
 import { repository } from '@/data/repository';
 import type { ReferralDashboard, SubscriptionTier } from '@/types';
 import { profilePhotoUri } from '@/domain/profileMedia';
+import { pickProfilePhoto } from '@/services/profilePhoto';
 export default function Me() {
-  const { profile, demoMode } = useApp();
+  const { profile, demoMode, uploadProfilePhoto } = useApp();
   const [tier, setTier] = useState<SubscriptionTier>('free');
   const [referrals, setReferrals] = useState<ReferralDashboard | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
   useFocusEffect(
     useCallback(() => {
       repository
@@ -37,19 +39,20 @@ export default function Me() {
         />
       </MainTabScreen>
     );
+  const performanceSamples = p.media.filter((item) => item.type !== 'image');
   const signals = [
     Boolean(p.bio.trim()),
     p.genres.length >= 2,
     p.influences.length > 0,
     p.desiredRoles.length > 0,
     p.availability.length > 0,
-    p.media.length > 0,
+    performanceSamples.length > 0,
     p.goals.length > 0,
     Boolean(p.rehearsalFrequency),
   ];
   const completion = Math.round((signals.filter(Boolean).length / signals.length) * 100);
   const profilePhoto = profilePhotoUri(p);
-  const next = !p.media.length
+  const next = !performanceSamples.length
     ? {
         text: 'Add a performance sample so musicians can hear your sound.',
         route: '/media' as const,
@@ -85,7 +88,36 @@ export default function Me() {
         }
       />
       <View style={styles.identityCard}>
-        <Avatar initials={p.initials} color={p.heroColor} size={104} uri={profilePhoto} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={profilePhoto ? 'Change profile photo' : 'Add profile photo'}
+          disabled={photoBusy}
+          onPress={async () => {
+            try {
+              const photo = await pickProfilePhoto();
+              if (!photo) return;
+              setPhotoBusy(true);
+              await uploadProfilePhoto(photo.uri, photo.mimeType);
+            } catch (cause) {
+              Alert.alert(
+                'Photo not changed',
+                cause instanceof Error ? cause.message : 'Please try again.',
+              );
+            } finally {
+              setPhotoBusy(false);
+            }
+          }}
+          style={styles.photoButton}
+        >
+          <Avatar initials={p.initials} color={p.heroColor} size={104} uri={profilePhoto} />
+          <View style={styles.cameraBadge}>
+            <Ionicons
+              name={photoBusy ? 'hourglass' : 'camera'}
+              size={16}
+              color={colors.accentInk}
+            />
+          </View>
+        </Pressable>
         <View style={styles.identityCopy}>
           <View style={styles.nameLine}>
             <Text numberOfLines={1} style={styles.name}>
@@ -196,8 +228,8 @@ export default function Me() {
         />
         <SettingRow
           icon="musical-notes"
-          title="Profile media"
-          subtitle="Photos, audio, and video"
+          title="Performance samples"
+          subtitle="Audio and video"
           onPress={() => router.push('/media')}
         />
         <SettingRow
@@ -242,6 +274,20 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   identityCopy: { flex: 1, gap: 5 },
+  photoButton: { position: 'relative' },
+  cameraBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.accent,
+    borderWidth: 3,
+    borderColor: colors.panel,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   nameLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   name: { color: colors.text, ...type.h2, flexShrink: 1 },
   availableBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },

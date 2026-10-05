@@ -35,6 +35,7 @@ type AppState = {
   finishOnboarding(profile: MusicianProfile): Promise<void>;
   updateProfile(profile: MusicianProfile): Promise<void>;
   uploadMedia(uri: string, mimeType: string, title: string): Promise<void>;
+  uploadProfilePhoto(uri: string, mimeType: string): Promise<void>;
   like(id: string): Promise<boolean>;
   pass(id: string): Promise<void>;
   block(id: string): Promise<void>;
@@ -267,6 +268,12 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       uploadMedia: async (uri, mimeType, title) => {
         if (!userId) throw new Error('Sign in before uploading media.');
         await needRepo().uploadMedia(userId, uri, mimeType, title);
+        const updated = await needRepo().getProfile(userId);
+        if (updated) setProfile(updated);
+      },
+      uploadProfilePhoto: async (uri, mimeType) => {
+        if (!userId) throw new Error('Sign in before uploading a profile photo.');
+        await needRepo().uploadProfilePhoto(userId, uri, mimeType);
         const updated = await needRepo().getProfile(userId);
         if (updated) setProfile(updated);
       },

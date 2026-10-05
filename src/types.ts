@@ -42,6 +42,8 @@ export type MusicianProfile = {
   availableNow: boolean;
   heroColor: string;
   initials: string;
+  profilePhotoUri?: string;
+  profilePhotoStoragePath?: string;
   media: MediaSample[];
 };
 export type DiscoveryPreferences = {

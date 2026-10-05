@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -20,13 +19,14 @@ import {
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { Commitment, Goal } from '@/types';
+import { pickProfilePhoto } from '@/services/profilePhoto';
 
 const goals: Goal[] = ['Casual jams', 'Form a band', 'Join a band', 'Session work', 'Paid gigs'];
 const commitments: Commitment[] = ['Casual', 'Consistent', 'Serious', 'Professional'];
 const toggle = (list: string[], value: string) =>
   list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
 export default function Onboarding() {
-  const { finishOnboarding, uploadMedia, userId } = useApp();
+  const { finishOnboarding, uploadMedia, uploadProfilePhoto, userId } = useApp();
   const [step, setStep] = useState(0);
   const [p, setP] = useState(() => createBlankProfile(userId || ''));
   const [error, setError] = useState('');
@@ -76,7 +76,14 @@ export default function Onboarding() {
       try {
         await finishOnboarding(completed);
         const failed: string[] = [];
-        for (const item of picked) {
+        if (profilePhoto) {
+          try {
+            await uploadProfilePhoto(profilePhoto.uri, profilePhoto.mimeType);
+          } catch {
+            failed.push('Profile photo');
+          }
+        }
+        for (const item of performanceMedia) {
           try {
             await uploadMedia(item.uri, item.mimeType, item.title);
           } catch {
@@ -134,28 +141,20 @@ export default function Onboarding() {
             <Pressable
               style={profilePhoto && styles.photoReplace}
               onPress={async () => {
-                const r = await ImagePicker.launchImageLibraryAsync({
-                  mediaTypes: ['images'],
-                  quality: 0.8,
-                });
-                if (!r.canceled) {
-                  const asset = r.assets[0]!;
-                  const mimeType = asset.mimeType || 'image/jpeg';
-                  if (
-                    !mediaRules.image.types.includes(mimeType as never) ||
-                    (asset.fileSize && asset.fileSize > mediaRules.image.maxBytes)
-                  ) {
-                    setError('Choose a JPEG, PNG, or WebP image smaller than 10 MB.');
-                    return;
-                  }
+                try {
+                  const photo = await pickProfilePhoto();
+                  if (!photo) return;
                   setPicked([
                     {
-                      uri: asset.uri,
-                      mimeType,
+                      uri: photo.uri,
+                      mimeType: photo.mimeType,
                       title: 'Profile photo',
                     },
                     ...picked.filter((item) => item.title !== 'Profile photo'),
                   ]);
+                  setError('');
+                } catch (cause) {
+                  setError(cause instanceof Error ? cause.message : 'Choose another photo.');
                 }
               }}
             >

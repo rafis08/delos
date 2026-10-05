@@ -2,6 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { profilePhotoUri } from '@/domain/profileMedia';
 
 describe('profile photo selection', () => {
+  it('uses the dedicated profile photo before legacy media', () => {
+    expect(
+      profilePhotoUri({
+        profilePhotoUri: 'avatar.jpg',
+        media: [{ id: 'legacy', type: 'image', title: 'Profile photo', uri: 'legacy.jpg' }],
+      }),
+    ).toBe('avatar.jpg');
+  });
+
   it('prefers the designated profile photo over gallery images', () => {
     expect(
       profilePhotoUri({

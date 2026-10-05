@@ -105,6 +105,7 @@ function mapProfile(row: Row): MusicianProfile {
     availableNow: Boolean(row.available_now),
     heroColor: colorFor(id),
     initials: initials(displayName),
+    profilePhotoStoragePath: row.profile_photo_path ? String(row.profile_photo_path) : undefined,
     media: rows(row.media_samples).map((x) => ({
       id: String(x.id),
       type: x.media_type as 'image' | 'audio' | 'video',
@@ -138,6 +139,7 @@ export interface DelosRepository {
   listSupportTickets(): Promise<SupportTicket[]>;
   clearApproximateLocation(): Promise<void>;
   uploadMedia(profileId: string, uri: string, mimeType: string, title: string): Promise<void>;
+  uploadProfilePhoto(profileId: string, uri: string, mimeType: string): Promise<void>;
   listNotifications(): Promise<import('@/types').NotificationItem[]>;
   markNotificationsRead(): Promise<void>;
   getDiscoveryPreferences(): Promise<DiscoveryPreferences>;
@@ -186,16 +188,23 @@ export interface DelosRepository {
 export class SupabaseRepository implements DelosRepository {
   constructor(private client: SupabaseClient) {}
   private async withMediaUrls(profile: MusicianProfile) {
-    const media = await Promise.all(
-      profile.media.map(async (item) => {
-        if (!item.storagePath) return item;
-        const { data } = await this.client.storage
-          .from('profile-media')
-          .createSignedUrl(item.storagePath, 3600);
-        return { ...item, uri: data?.signedUrl };
-      }),
-    );
-    return { ...profile, media };
+    const [media, profilePhoto] = await Promise.all([
+      Promise.all(
+        profile.media.map(async (item) => {
+          if (!item.storagePath) return item;
+          const { data } = await this.client.storage
+            .from('profile-media')
+            .createSignedUrl(item.storagePath, 3600);
+          return { ...item, uri: data?.signedUrl };
+        }),
+      ),
+      profile.profilePhotoStoragePath
+        ? this.client.storage
+            .from('profile-photos')
+            .createSignedUrl(profile.profilePhotoStoragePath, 3600)
+        : Promise.resolve({ data: null }),
+    ]);
+    return { ...profile, media, profilePhotoUri: profilePhoto.data?.signedUrl };
   }
   async getProfile(userId: string) {
     const { data, error } = await this.client
@@ -547,7 +556,11 @@ export class SupabaseRepository implements DelosRepository {
     const { error: uploadError } = await this.client.storage
       .from('profile-media')
       .upload(path, body, { contentType: mimeType, upsert: false });
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      if (uploadError.message.toLowerCase().includes('row-level security'))
+        throw new Error('Your sample could not be uploaded. Please sign in again and retry.');
+      throw uploadError;
+    }
     const mediaType = mimeType.startsWith('image/')
       ? 'image'
       : mimeType.startsWith('audio/')
@@ -567,6 +580,8 @@ export class SupabaseRepository implements DelosRepository {
       .single();
     if (error) {
       await this.client.storage.from('profile-media').remove([path]);
+      if (error.message.toLowerCase().includes('row-level security'))
+        throw new Error('Your sample could not be saved. Please sign in again and retry.');
       throw error;
     }
     if (mediaType === 'image' && title === 'Profile photo') {
@@ -588,6 +603,31 @@ export class SupabaseRepository implements DelosRepository {
           await this.client.storage.from('profile-media').remove(paths);
       }
     }
+  }
+  async uploadProfilePhoto(profileId: string, uri: string, mimeType: string) {
+    const response = await fetch(uri);
+    const body = await response.arrayBuffer();
+    const extension = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : mimeType.split('/')[1] || 'jpg';
+    const path = `${profileId}/${Date.now()}.${extension}`;
+    const current = await this.getProfile(profileId);
+    const { error: uploadError } = await this.client.storage
+      .from('profile-photos')
+      .upload(path, body, { contentType: mimeType, upsert: false });
+    if (uploadError) {
+      if (uploadError.message.toLowerCase().includes('row-level security'))
+        throw new Error('Your photo could not be uploaded. Please sign in again and retry.');
+      throw uploadError;
+    }
+    const { error } = await this.client
+      .from('musician_profiles')
+      .update({ profile_photo_path: path, updated_at: new Date().toISOString() })
+      .eq('user_id', profileId);
+    if (error) {
+      await this.client.storage.from('profile-photos').remove([path]);
+      throw error;
+    }
+    if (current?.profilePhotoStoragePath && current.profilePhotoStoragePath !== path)
+      await this.client.storage.from('profile-photos').remove([current.profilePhotoStoragePath]);
   }
   async listNotifications() {
     const { data, error } = await this.client

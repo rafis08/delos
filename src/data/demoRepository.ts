@@ -280,6 +280,9 @@ export class DemoRepository {
       ],
     };
   }
+  async uploadProfilePhoto(_profileId: string, uri: string) {
+    this.profile = { ...this.profile, profilePhotoUri: uri };
+  }
   async listNotifications() {
     return [...this.notifications];
   }
