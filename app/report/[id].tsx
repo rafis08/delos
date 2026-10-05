@@ -21,13 +21,21 @@ export default function Report() {
     if (!repository) return setError('Supabase is not configured.');
     try {
       await repository.report(id, reason, details);
-      Alert.alert('Report received', 'The report is confidential. Would you also like to block this member?', [
-        { text: 'Not now', onPress: () => router.replace('/(tabs)/discover') },
-        { text: 'Block member', style: 'destructive', onPress: async () => {
-          await block(id);
-          router.replace('/(tabs)/discover');
-        } },
-      ]);
+      Alert.alert(
+        'Report received',
+        'The report is confidential. Would you also like to block this member?',
+        [
+          { text: 'Not now', onPress: () => router.replace('/(tabs)/discover') },
+          {
+            text: 'Block member',
+            style: 'destructive',
+            onPress: async () => {
+              await block(id);
+              router.replace('/(tabs)/discover');
+            },
+          },
+        ],
+      );
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not submit this report.');
     }

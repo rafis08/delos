@@ -10,21 +10,64 @@ export default function PrivacyControls() {
   return (
     <Screen>
       <Header eyebrow="PRIVACY" title="Control what members see" />
-      <Text style={styles.note}>Your sign-in email, precise coordinates, support requests, reports, and payment identifiers are never shown on your musician profile.</Text>
+      <Text style={styles.note}>
+        Your sign-in email, precise coordinates, support requests, reports, and payment identifiers
+        are never shown on your musician profile.
+      </Text>
       <View style={styles.group}>
-        <SettingRow icon="eye" title="Visible in discovery" subtitle="Turn off to stop appearing to new musicians" value={settings.discoveryVisible} onValueChange={(value) => updateSettings({ discoveryVisible: value })} />
-        <SettingRow icon="sunny" title="Show available now" subtitle="Share that you are open to timely invitations" value={settings.showAvailableNow} onValueChange={(value) => updateSettings({ showAvailableNow: value })} />
+        <SettingRow
+          icon="eye"
+          title="Visible in discovery"
+          subtitle="Turn off to stop appearing to new musicians"
+          value={settings.discoveryVisible}
+          onValueChange={(value) => updateSettings({ discoveryVisible: value })}
+        />
+        <SettingRow
+          icon="sunny"
+          title="Show available now"
+          subtitle="Share that you are open to timely invitations"
+          value={settings.showAvailableNow}
+          onValueChange={(value) => updateSettings({ showAvailableNow: value })}
+        />
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>Approximate location</Text>
-        <Text style={styles.note}>Delos stores rounded coordinates privately to calculate distance. Members see only the city or area you entered—never your coordinates or street address.</Text>
-        <Button label="Remove saved coordinates" variant="secondary" onPress={() => Alert.alert('Remove approximate coordinates?', 'Distance-based recommendations may be less accurate. Your city or area stays on your profile until you edit it.', [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Remove', style: 'destructive', onPress: async () => { await repository?.clearApproximateLocation(); Alert.alert('Location removed', 'Your saved coordinates have been cleared.'); } },
-        ])} />
+        <Text style={styles.note}>
+          Delos stores rounded coordinates privately to calculate distance. Members see only the
+          city or area you entered—never your coordinates or street address.
+        </Text>
+        <Button
+          label="Remove saved coordinates"
+          variant="secondary"
+          onPress={() =>
+            Alert.alert(
+              'Remove approximate coordinates?',
+              'Distance-based recommendations may be less accurate. Your city or area stays on your profile until you edit it.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Remove',
+                  style: 'destructive',
+                  onPress: async () => {
+                    await repository?.clearApproximateLocation();
+                    Alert.alert('Location removed', 'Your saved coordinates have been cleared.');
+                  },
+                },
+              ],
+            )
+          }
+        />
       </View>
-      <Button label="Manage blocked members" variant="secondary" onPress={() => router.push('/blocked')} />
-      <Button label="Privacy policy & standards" variant="ghost" onPress={() => router.push('/legal')} />
+      <Button
+        label="Manage blocked members"
+        variant="secondary"
+        onPress={() => router.push('/blocked')}
+      />
+      <Button
+        label="Privacy policy & standards"
+        variant="ghost"
+        onPress={() => router.push('/legal')}
+      />
     </Screen>
   );
 }

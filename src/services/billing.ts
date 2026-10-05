@@ -91,6 +91,22 @@ function hasPro(customerInfo: { entitlements: { active: Record<string, unknown> 
   return Boolean(customerInfo.entitlements.active[REVENUECAT_ENTITLEMENT]);
 }
 
+function storeConfigurationError(cause: unknown) {
+  const message = cause instanceof Error ? cause.message : String(cause || '');
+  const code =
+    typeof cause === 'object' && cause && 'code' in cause ? String(cause.code) : '';
+  if (
+    code === '23' ||
+    message.includes('configuration') ||
+    message.includes('could be fetched from App Store Connect')
+  ) {
+    return new Error(
+      'Delos Amplified is temporarily unavailable while its App Store plans finish connecting. No purchase was made. Please try again later.',
+    );
+  }
+  return cause instanceof Error ? cause : new Error('The App Store could not be reached.');
+}
+
 async function currentCustomer() {
   const Purchases = await nativePurchases();
   const info = await Purchases.getCustomerInfo();
@@ -131,18 +147,26 @@ const nativeStoreBilling: BillingService = {
     return (await currentCustomer()).isPro;
   },
   async startSubscription() {
-    await nativePurchases();
-    const { default: RevenueCatUI, PAYWALL_RESULT } = await import('react-native-purchases-ui');
-    const result = await RevenueCatUI.presentPaywallIfNeeded({
-      requiredEntitlementIdentifier: REVENUECAT_ENTITLEMENT,
-      displayCloseButton: true,
-    });
-    if (result === PAYWALL_RESULT.CANCELLED || result === PAYWALL_RESULT.NOT_PRESENTED) return;
-    if (result === PAYWALL_RESULT.ERROR)
-      throw new Error('The App Store purchase screen could not be opened. Please try again.');
-    if (!(await currentCustomer()).isPro)
-      throw new Error('Your purchase is still processing. Use Restore Purchases in a moment.');
-    await syncNativeEntitlement();
+    try {
+      const Purchases = await nativePurchases();
+      const offerings = await Purchases.getOfferings();
+      if (!offerings.current?.availablePackages.length) {
+        throw new Error('No App Store products are attached to the current offering.');
+      }
+      const { default: RevenueCatUI, PAYWALL_RESULT } = await import('react-native-purchases-ui');
+      const result = await RevenueCatUI.presentPaywallIfNeeded({
+        requiredEntitlementIdentifier: REVENUECAT_ENTITLEMENT,
+        displayCloseButton: true,
+      });
+      if (result === PAYWALL_RESULT.CANCELLED || result === PAYWALL_RESULT.NOT_PRESENTED) return;
+      if (result === PAYWALL_RESULT.ERROR)
+        throw new Error('The App Store purchase screen could not be opened. Please try again.');
+      if (!(await currentCustomer()).isPro)
+        throw new Error('Your purchase is still processing. Use Restore Purchases in a moment.');
+      await syncNativeEntitlement();
+    } catch (cause) {
+      throw storeConfigurationError(cause);
+    }
   },
   async purchasePackage(packageIdentifier) {
     const Purchases = await nativePurchases();

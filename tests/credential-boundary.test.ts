@@ -26,7 +26,11 @@ describe('credential and deletion boundaries', () => {
       'supabase/migrations/202609220018_account_deletion_boundary.sql',
       'utf8',
     );
-    expect(migration).toMatch(/revoke all on function public\.delete_own_account\(\) from authenticated/i);
-    expect(migration).toMatch(/grant execute on function public\.delete_own_account\(\) to service_role/i);
+    expect(migration).toMatch(
+      /revoke all on function public\.delete_own_account\(\) from authenticated/i,
+    );
+    expect(migration).toMatch(
+      /grant execute on function public\.delete_own_account\(\) to service_role/i,
+    );
   });
 });

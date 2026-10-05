@@ -27,4 +27,3 @@ To request access, correction, deletion, portability, restriction, objection, or
 We may verify identity and authority before responding. Authorized agents must provide permission and may need to verify the user directly. We respond within the period required by applicable law.
 
 Delos does not currently sell personal information or use it for cross-context behavioral advertising. If those practices change, this page and the Privacy Policy will be updated before the change takes effect where required.
-

@@ -57,9 +57,7 @@ export default function Welcome() {
           />
         )}
       </View>
-      {demoModeEnabled && (
-        <Text style={styles.demoNote}>INTERNAL DEMO · FICTIONAL DATA</Text>
-      )}
+      {demoModeEnabled && <Text style={styles.demoNote}>INTERNAL DEMO · FICTIONAL DATA</Text>}
       <Text style={styles.legal}>
         18+ only · By continuing, you agree to our community standards.
       </Text>

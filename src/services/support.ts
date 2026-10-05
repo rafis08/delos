@@ -15,5 +15,7 @@ export function getSupportDiagnostics(): Record<string, string> {
 }
 
 export function formatDiagnostics(diagnostics: Record<string, string>) {
-  return Object.entries(diagnostics).map(([key, value]) => `${key}: ${value}`).join('\n');
+  return Object.entries(diagnostics)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('\n');
 }

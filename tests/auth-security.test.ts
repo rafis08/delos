@@ -12,8 +12,8 @@ describe('authentication validation', () => {
   });
 
   it('does not lock existing users out based on a newer signup policy', () => {
-    expect(signInSchema.safeParse({ email: 'a@example.com', password: 'legacy-pass' }).success).toBe(
-      true,
-    );
+    expect(
+      signInSchema.safeParse({ email: 'a@example.com', password: 'legacy-pass' }).success,
+    ).toBe(true);
   });
 });

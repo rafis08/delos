@@ -41,4 +41,3 @@ AIFIXMY may remove content, reduce distribution, limit features, require verific
 To report content, use the in-app report control or contact support@delosmusic.app. Include URLs, usernames, dates, and screenshots when safe. Do not submit knowingly false reports. Appeals may be sent to support@delosmusic.app; an appeal does not guarantee reinstatement.
 
 Delos is not an emergency service. If danger is immediate, contact local emergency services.
-

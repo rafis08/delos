@@ -20,6 +20,7 @@ These documents are launch drafts for **Delos**, operated by **AIFIXMY LLC**, a 
 ## Business location
 
 AIFIXMY LLC is based in Livingston, New Jersey, United States. Email is the official initial contact method.
+
 ## Canonical public URLs
 
 - Website: `https://delosmusic.app`

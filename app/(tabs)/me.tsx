@@ -1,21 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useCallback, useState } from 'react';
 import { MainTabScreen } from '@/components/MainTabScreen';
 import { Avatar, Button, Chip, Header, SettingRow, StateView } from '@/components/ui';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { repository } from '@/data/repository';
-import { SubscriptionTier } from '@/types';
+import type { ReferralDashboard, SubscriptionTier } from '@/types';
 export default function Me() {
   const { profile, demoMode } = useApp();
   const [tier, setTier] = useState<SubscriptionTier>('free');
+  const [referrals, setReferrals] = useState<ReferralDashboard | null>(null);
   useFocusEffect(
     useCallback(() => {
       repository
         ?.getSubscriptionTier()
         .then(setTier)
+        .catch(() => undefined);
+      repository
+        ?.getReferralDashboard()
+        .then(setReferrals)
         .catch(() => undefined);
     }, []),
   );
@@ -65,44 +70,98 @@ export default function Me() {
   return (
     <MainTabScreen tab="me">
       <Header
-        eyebrow={demoMode ? 'DEMO PROFILE · FICTIONAL DATA' : 'YOUR PROFILE'}
-        title={p.displayName}
-        right={<Avatar initials={p.initials} color={p.heroColor} size={68} uri={profilePhoto} />}
+        eyebrow={demoMode ? 'DEMO · FICTIONAL DATA' : 'YOUR MUSICIAN IDENTITY'}
+        title="Profile"
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open settings"
+            onPress={() => router.push('/settings')}
+            style={styles.settingsButton}
+          >
+            <Ionicons name="settings-outline" size={22} color={colors.text} />
+          </Pressable>
+        }
       />
-      <View style={styles.completion}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.compTitle}>Profile strength · {completion}%</Text>
-          <Text style={styles.compBody}>{next.text}</Text>
-          <Text onPress={() => router.push(next.route)} style={styles.nextLink}>
-            DO THIS NEXT →
+      <View style={styles.identityCard}>
+        <Avatar initials={p.initials} color={p.heroColor} size={104} uri={profilePhoto} />
+        <View style={styles.identityCopy}>
+          <View style={styles.nameLine}>
+            <Text numberOfLines={1} style={styles.name}>
+              {p.displayName}
+            </Text>
+            {p.verifiedEmail && (
+              <Ionicons name="checkmark-circle" size={18} color={colors.orange} />
+            )}
+          </View>
+          <Text style={styles.role}>
+            {p.primaryInstrument} · {p.skill}
           </Text>
+          <Text numberOfLines={1} style={styles.location}>
+            <Ionicons name="location-outline" size={14} /> {p.location} · {p.yearsExperience} yrs
+          </Text>
+          {p.availableNow && (
+            <View style={styles.availableBadge}>
+              <View style={styles.availableDot} />
+              <Text style={styles.availableText}>AVAILABLE NOW</Text>
+            </View>
+          )}
         </View>
-        <View style={styles.ring}>
-          <Text style={styles.ringText}>{completion}</Text>
-        </View>
-      </View>
-      <View>
-        <Text style={styles.role}>
-          {p.primaryInstrument} · {p.skill}
-        </Text>
-        <Text style={styles.location}>
-          <Ionicons name="location-outline" /> {p.location} · {p.yearsExperience} years
-        </Text>
-      </View>
-      <Text style={styles.bio}>{p.bio}</Text>
-      <View style={styles.chips}>
-        {[...new Set(p.genres)].map((g) => (
-          <Chip key={g} label={g} />
-        ))}
       </View>
       <View style={styles.actions}>
         <View style={{ flex: 1 }}>
           <Button label="Edit profile" onPress={() => router.push('/edit-profile')} />
         </View>
         <View style={{ flex: 1 }}>
-          <Button label="Preview" variant="secondary" onPress={() => router.push('/profile/me')} />
+          <Button
+            label="Public preview"
+            variant="secondary"
+            onPress={() => router.push('/profile/me')}
+          />
         </View>
       </View>
+      <View style={styles.aboutCard}>
+        <View style={styles.sectionHeading}>
+          <Text style={styles.sectionTitle}>ABOUT MY SOUND</Text>
+          <Text onPress={() => router.push('/edit-profile')} style={styles.inlineLink}>
+            EDIT
+          </Text>
+        </View>
+        <Text numberOfLines={4} style={styles.bio}>
+          {p.bio}
+        </Text>
+        <View style={styles.chips}>
+          {[...new Set(p.genres)].slice(0, 5).map((g) => (
+            <Chip key={g} label={g} />
+          ))}
+        </View>
+      </View>
+      <Pressable onPress={() => router.push(next.route)} style={styles.completion}>
+        <View style={styles.ring}>
+          <Text style={styles.ringText}>{completion}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.compTitle}>Profile strength · {completion}%</Text>
+          <Text numberOfLines={2} style={styles.compBody}>
+            {next.text}
+          </Text>
+        </View>
+        <Ionicons name="arrow-forward" size={20} color={colors.orange} />
+      </Pressable>
+      <Pressable onPress={() => router.push('/invite')} style={styles.referralCard}>
+        <View style={styles.referralIcon}>
+          <Ionicons name="people" size={25} color={colors.accentInk} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.referralEyebrow}>BUILD THE SCENE</Text>
+          <Text style={styles.referralTitle}>Invite musicians. Earn Premium.</Text>
+          <View style={styles.referralTrack}>
+            <View style={[styles.referralFill, { width: `${(referrals?.progress || 0) * 20}%` }]} />
+          </View>
+          <Text style={styles.referralBody}>{referrals?.progress || 0} of 5 friends joined</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={21} color={colors.accentInk} />
+      </Pressable>
       <View style={[styles.membership, tier === 'amplified' && styles.membershipActive]}>
         <View style={styles.membershipMark}>
           <Ionicons name="sunny" size={21} color={colors.accentInk} />
@@ -146,12 +205,6 @@ export default function Me() {
           onPress={() => router.push('/filters')}
         />
         <SettingRow
-          icon="people"
-          title="Invite friends"
-          subtitle="5 musicians = 1 free month of Premium"
-          onPress={() => router.push('/invite')}
-        />
-        <SettingRow
           icon="settings"
           title="Settings & privacy"
           onPress={() => router.push('/settings')}
@@ -167,33 +220,99 @@ export default function Me() {
   );
 }
 const styles = StyleSheet.create({
+  settingsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.panel,
+    borderWidth: 1,
+    borderColor: colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  identityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    padding: space.md,
+    backgroundColor: colors.panel,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  identityCopy: { flex: 1, gap: 5 },
+  nameLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  name: { color: colors.text, ...type.h2, flexShrink: 1 },
+  availableBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  availableDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#39A96B' },
+  availableText: { color: '#26784C', fontWeight: '900', fontSize: 10, letterSpacing: 0.7 },
+  aboutCard: {
+    padding: space.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.line,
+    gap: space.sm,
+  },
+  sectionHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { color: colors.muted, fontSize: 11, fontWeight: '900', letterSpacing: 1.1 },
+  inlineLink: { color: '#8A5000', fontSize: 11, fontWeight: '900' },
   completion: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: space.sm,
     padding: space.md,
-    backgroundColor: colors.panel,
+    backgroundColor: '#FFFBF2',
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.line,
   },
   compTitle: { color: colors.text, fontWeight: '800' },
   compBody: { color: colors.muted, fontSize: 13, marginTop: 4 },
-  nextLink: { color: '#9A5700', fontSize: 11, fontWeight: '900', marginTop: 8, letterSpacing: 0.5 },
   ring: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 5,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    borderWidth: 4,
     borderColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   ringText: { color: colors.text, fontWeight: '900' },
-  role: { color: colors.text, ...type.h2 },
-  location: { color: colors.muted, marginTop: 7 },
-  bio: { color: colors.text, ...type.body },
+  role: { color: colors.text, fontWeight: '700', fontSize: 14 },
+  location: { color: colors.muted, fontSize: 13 },
+  bio: { color: colors.text, fontSize: 15, lineHeight: 21 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   actions: { flexDirection: 'row', gap: 10 },
+  referralCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: space.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.accent,
+    borderWidth: 1,
+    borderColor: '#E8A900',
+  },
+  referralIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.55)',
+  },
+  referralEyebrow: { color: '#704400', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  referralTitle: { color: colors.accentInk, fontWeight: '900', fontSize: 15, marginTop: 2 },
+  referralBody: { color: '#704400', fontSize: 11, fontWeight: '700', marginTop: 4 },
+  referralTrack: {
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: 'rgba(112,68,0,0.18)',
+    marginTop: 8,
+    overflow: 'hidden',
+  },
+  referralFill: { height: '100%', borderRadius: 3, backgroundColor: colors.orange },
   menu: { backgroundColor: colors.panel, paddingHorizontal: space.md, borderRadius: radius.lg },
   membership: {
     flexDirection: 'row',

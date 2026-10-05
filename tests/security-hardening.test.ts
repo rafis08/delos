@@ -33,7 +33,7 @@ describe('security hardening migration', () => {
   it('requires storage objects to be registered and visible', () => {
     expect(migration).toContain('where ms.storage_path = name');
     expect(migration).toContain('and p.discovery_visible');
-    expect(migration).toContain("(storage.foldername(name))[1] = auth.uid()::text");
+    expect(migration).toContain('(storage.foldername(name))[1] = auth.uid()::text');
   });
 });
 

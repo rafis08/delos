@@ -37,7 +37,10 @@ function RootLayout() {
               contentStyle: { backgroundColor: colors.ink },
               animation: 'slide_from_right',
             }}
-          />
+          >
+            <Stack.Screen name="(tabs)" options={{ gestureEnabled: false, animation: 'fade' }} />
+            <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+          </Stack>
         </AppProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

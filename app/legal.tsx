@@ -18,14 +18,22 @@ export default function Legal() {
         body="You can block or report a member from their profile, mute notifications, pause discovery visibility, and permanently delete your account."
       />
       <View style={styles.links}>
-        <Button label="Privacy Policy" variant="secondary" onPress={() => openLegalPage('/privacy')} />
+        <Button
+          label="Privacy Policy"
+          variant="secondary"
+          onPress={() => openLegalPage('/privacy')}
+        />
         <Button label="Terms of Use" variant="secondary" onPress={() => openLegalPage('/terms')} />
         <Button
           label="Community Guidelines"
           variant="secondary"
           onPress={() => openLegalPage('/community')}
         />
-        <Button label="Safety & meetups" variant="secondary" onPress={() => openLegalPage('/safety')} />
+        <Button
+          label="Safety & meetups"
+          variant="secondary"
+          onPress={() => openLegalPage('/safety')}
+        />
         <Button label="Support" variant="secondary" onPress={() => openLegalPage('/support')} />
         <Button
           label="Privacy choices & account deletion"
