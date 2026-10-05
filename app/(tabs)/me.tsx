@@ -8,6 +8,7 @@ import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { repository } from '@/data/repository';
 import type { ReferralDashboard, SubscriptionTier } from '@/types';
+import { profilePhotoUri } from '@/domain/profileMedia';
 export default function Me() {
   const { profile, demoMode } = useApp();
   const [tier, setTier] = useState<SubscriptionTier>('free');
@@ -47,7 +48,7 @@ export default function Me() {
     Boolean(p.rehearsalFrequency),
   ];
   const completion = Math.round((signals.filter(Boolean).length / signals.length) * 100);
-  const profilePhoto = p.media.find((item) => item.type === 'image' && item.uri)?.uri;
+  const profilePhoto = profilePhotoUri(p);
   const next = !p.media.length
     ? {
         text: 'Add a performance sample so musicians can hear your sound.',

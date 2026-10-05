@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Avatar, Button, Header, Screen, StateView } from '@/components/ui';
 import { repository } from '@/data/repository';
 import { colors, radius, space } from '@/theme';
+import { profilePhotoUri } from '@/domain/profileMedia';
 import { MusicianProfile } from '@/types';
 export default function Saved() {
   const [items, setItems] = useState<MusicianProfile[] | null>(null);
@@ -33,11 +34,7 @@ export default function Saved() {
             onPress={() => router.push(`/profile/${item.id}`)}
             style={styles.row}
           >
-            <Avatar
-              initials={item.initials}
-              color={item.heroColor}
-              uri={item.media.find((media) => media.type === 'image' && media.uri)?.uri}
-            />
+            <Avatar initials={item.initials} color={item.heroColor} uri={profilePhotoUri(item)} />
             <View style={styles.copy}>
               <Text style={styles.name}>{item.displayName}</Text>
               <Text style={styles.meta}>

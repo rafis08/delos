@@ -11,6 +11,7 @@ import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
 import { MusicianProfile } from '@/types';
 import { TrustSignals } from '@/components/TrustSignals';
+import { profilePhotoUri } from '@/domain/profileMedia';
 export default function FullProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { like, pass, block, profile } = useApp();
@@ -48,7 +49,7 @@ export default function FullProfile() {
       </Screen>
     );
   const p = remote;
-  const photo = p.media.find((item) => item.type === 'image' && item.uri);
+  const photo = profilePhotoUri(p);
   const performances = p.media.filter((item) => item.type !== 'image');
   const c = calculateCompatibility(profile, p);
   return (
@@ -89,10 +90,8 @@ export default function FullProfile() {
         }
       />
       <View style={[styles.hero, { backgroundColor: p.heroColor }]}>
-        {photo?.uri && (
-          <Image source={photo.uri} contentFit="cover" style={StyleSheet.absoluteFill} />
-        )}
-        {!photo?.uri && (
+        {photo && <Image source={photo} contentFit="cover" style={StyleSheet.absoluteFill} />}
+        {!photo && (
           <>
             <View style={styles.disc} />
             <Text style={styles.initials}>{p.initials}</Text>

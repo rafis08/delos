@@ -6,6 +6,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MusicianProfile } from '@/types';
 import { colors, radius, shadow } from '@/theme';
+import { profilePhotoUri } from '@/domain/profileMedia';
 import { Chip } from './ui';
 import { TrustSignals } from './TrustSignals';
 
@@ -20,15 +21,18 @@ export function ProfileCard({
   explanation: string;
   compact?: boolean;
 }) {
-  const photo = profile.media.find((item) => item.type === 'image' && item.uri);
+  const photo = profilePhotoUri(profile);
   return (
     <View style={[styles.card, shadow]}>
       <View style={[styles.art, { backgroundColor: profile.heroColor }]}>
-        {photo?.uri && (
-          <Image source={photo.uri} contentFit="cover" style={StyleSheet.absoluteFill} />
+        {photo ? (
+          <Image source={photo} contentFit="cover" style={StyleSheet.absoluteFill} />
+        ) : (
+          <>
+            <View style={styles.record} />
+            <Text style={styles.initials}>{profile.initials}</Text>
+          </>
         )}
-        <View style={styles.record} />
-        <Text style={styles.initials}>{profile.initials}</Text>
         <LinearGradient
           colors={['transparent', 'rgba(9,9,11,.18)']}
           style={StyleSheet.absoluteFill}

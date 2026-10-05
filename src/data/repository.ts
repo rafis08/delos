@@ -20,6 +20,7 @@ import {
   SupportTicketCategory,
   ReferralDashboard,
 } from '@/types';
+import { profilePhotoUri } from '@/domain/profileMedia';
 
 type Row = Record<string, unknown>;
 const palette = ['#E96B16', '#C98A12', '#FF9F1C', '#9A5B13', '#F2B134', '#B94724'];
@@ -370,7 +371,7 @@ export class SupabaseRepository implements DelosRepository {
         const profile = await this.getProfile(conversation.profileId).catch(() => null);
         return {
           ...conversation,
-          photoUri: profile?.media.find((item) => item.type === 'image' && item.uri)?.uri,
+          photoUri: profile ? profilePhotoUri(profile) : undefined,
         };
       }),
     );

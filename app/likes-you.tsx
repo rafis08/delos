@@ -6,6 +6,7 @@ import { PremiumPrompt } from '@/components/PremiumPrompt';
 import { repository } from '@/data/repository';
 import { colors, radius, space } from '@/theme';
 import { MusicianProfile, SubscriptionTier } from '@/types';
+import { profilePhotoUri } from '@/domain/profileMedia';
 
 export default function LikesYou() {
   const [tier, setTier] = useState<SubscriptionTier | null>(null);
@@ -69,7 +70,7 @@ export default function LikesYou() {
               initials={profile.initials}
               color={profile.heroColor}
               size={62}
-              uri={profile.media.find((item) => item.type === 'image' && item.uri)?.uri}
+              uri={profilePhotoUri(profile)}
             />
             <View style={{ flex: 1 }}>
               <Text style={styles.name}>
