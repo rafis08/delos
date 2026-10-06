@@ -12,6 +12,12 @@ const response = (body: unknown, status = 200) =>
     },
   });
 
+const isMissingStripeCustomer = (cause: unknown) =>
+  typeof cause === 'object' &&
+  cause !== null &&
+  (('statusCode' in cause && cause.statusCode === 404) ||
+    ('code' in cause && cause.code === 'resource_missing'));
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return response({ ok: true });
   if (request.method !== 'POST') return response({ error: 'Method not allowed' }, 405);
@@ -39,18 +45,28 @@ Deno.serve(async (request) => {
   if (subscriptionError) return response({ error: 'Account deletion could not be completed' }, 500);
 
   // Remove processor-side customer data before deleting the local identifier.
-  if (subscription?.provider === 'stripe' && subscription.provider_customer_id) {
+  if (subscription?.provider === 'stripe') {
+    if (!subscription.provider_customer_id) {
+      return response({ error: 'Account deletion is temporarily unavailable' }, 503);
+    }
     const key = Deno.env.get('STRIPE_SECRET_KEY');
     if (!key) return response({ error: 'Account deletion is temporarily unavailable' }, 503);
     const stripe = new Stripe(key, { apiVersion: '2026-07-29.dahlia' });
     try {
       await stripe.customers.del(subscription.provider_customer_id);
-    } catch {
-      return response({ error: 'Account deletion could not be completed' }, 502);
+    } catch (cause) {
+      // A previous attempt may have removed the customer before a later cleanup step failed.
+      // Stripe's missing-customer response therefore means this step is already complete.
+      if (!isMissingStripeCustomer(cause)) {
+        return response({ error: 'Account deletion could not be completed' }, 502);
+      }
     }
   }
 
   const revenueCatKey = Deno.env.get('REVENUECAT_SECRET_KEY');
+  if (subscription?.provider === 'revenuecat' && !revenueCatKey) {
+    return response({ error: 'Account deletion is temporarily unavailable' }, 503);
+  }
   if (revenueCatKey) {
     const result = await fetch(
       `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(data.user.id)}`,

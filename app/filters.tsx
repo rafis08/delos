@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Chips, Field, Header, Screen, SettingRow } from '@/components/ui';
+import { PremiumPrompt } from '@/components/PremiumPrompt';
 import { repository } from '@/data/repository';
 import { colors, space } from '@/theme';
 import { DiscoveryPreferences } from '@/types';
@@ -21,10 +22,16 @@ export default function Filters() {
   const [prefs, setPrefs] = useState(initial);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [premium, setPremium] = useState(false);
   useEffect(() => {
-    repository
-      ?.getDiscoveryPreferences()
-      .then((nextPrefs) => nextPrefs && setPrefs(nextPrefs))
+    void Promise.all([
+      repository?.getDiscoveryPreferences(),
+      repository?.getSubscriptionTier(),
+    ])
+      .then(([nextPrefs, tier]) => {
+        if (nextPrefs) setPrefs(nextPrefs);
+        setPremium(tier === 'amplified');
+      })
       .catch(() => setError('Could not load your saved preferences.'));
   }, []);
   const save = async () => {
@@ -110,26 +117,61 @@ export default function Filters() {
         }
       />
       <View style={styles.advanced}>
-        <Text style={styles.advancedTitle}>PRACTICAL FIT</Text>
+        <Text style={styles.advancedTitle}>PRACTICAL FIT · AMPLIFIED</Text>
         <SettingRow
           icon="sunny"
           title="Available now only"
           subtitle="Prioritize musicians ready to make plans"
           value={Boolean(prefs.availableNowOnly)}
-          onValueChange={(value) => setPrefs({ ...prefs, availableNowOnly: value })}
+          onPress={
+            !premium
+              ? () =>
+                  router.push({ pathname: '/premium', params: { source: 'advanced-filters' } })
+              : undefined
+          }
+          onValueChange={
+            premium ? (value) => setPrefs({ ...prefs, availableNowOnly: value }) : undefined
+          }
         />
         <SettingRow
           icon="car"
           title="Transportation required"
           value={Boolean(prefs.transportationRequired)}
-          onValueChange={(value) => setPrefs({ ...prefs, transportationRequired: value })}
+          onPress={
+            !premium
+              ? () =>
+                  router.push({ pathname: '/premium', params: { source: 'advanced-filters' } })
+              : undefined
+          }
+          onValueChange={
+            premium
+              ? (value) => setPrefs({ ...prefs, transportationRequired: value })
+              : undefined
+          }
         />
         <SettingRow
           icon="volume-high"
           title="Performance-ready gear"
           value={Boolean(prefs.performanceReadyGearRequired)}
-          onValueChange={(value) => setPrefs({ ...prefs, performanceReadyGearRequired: value })}
+          onPress={
+            !premium
+              ? () =>
+                  router.push({ pathname: '/premium', params: { source: 'advanced-filters' } })
+              : undefined
+          }
+          onValueChange={
+            premium
+              ? (value) => setPrefs({ ...prefs, performanceReadyGearRequired: value })
+              : undefined
+          }
         />
+        {!premium && (
+          <PremiumPrompt
+            source="advanced-filters"
+            title="Filter for real-world readiness"
+            body="Amplified adds availability, transportation, and performance-ready gear filters."
+          />
+        )}
       </View>
       {!!error && <Text style={styles.error}>{error}</Text>}
       <Button label={saving ? 'Saving…' : 'Apply preferences'} disabled={saving} onPress={save} />

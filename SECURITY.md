@@ -14,10 +14,12 @@
 - Native authentication sessions use encrypted, device-bound secure storage. Web sessions remain in browser storage and therefore depend on the browser origin remaining free of script injection.
 - Account deletion removes Supabase authentication/data/storage records, clears local app state, and attempts processor-side Stripe and RevenueCat customer deletion before completing.
 - Sentry remains disabled without a public DSN. When enabled, user identity, request bodies, headers, cookies, query strings, and network breadcrumbs are stripped before transmission.
+- Internal referral and entitlement helpers are not executable by app clients, entitlement checks are self-only, and storage uploads have database-enforced hourly and total-object caps.
+- Account deletion fails closed when required Stripe or RevenueCat processor cleanup cannot run.
 
 ## Required rollout
 
-1. Back up the production database and apply migrations through `202609220019_support_safety_privacy.sql` in staging first.
+1. Back up the production database and apply migrations through `202610060002_security_review_hardening.sql` in staging first.
 2. Run the Supabase database linter and manually test two real test accounts before production rollout.
 3. Deploy the authenticated `delete-account` Edge Function, then confirm its service-role, Stripe, and RevenueCat secrets are configured in Supabase—not in Expo `EXPO_PUBLIC_*` variables.
 4. Rotate any credential that has ever been committed, pasted into logs, or shipped in a client build.

@@ -655,8 +655,9 @@ export class SupabaseRepository implements DelosRepository {
     if (error) throw error;
   }
   async getDiscoveryPreferences(): Promise<DiscoveryPreferences> {
-    const { data, error } = await this.client.from('discovery_preferences').select('*').single();
+    const { data: rows, error } = await this.client.rpc('my_discovery_preferences');
     if (error) throw error;
+    const data = rows?.[0] || rows;
     return {
       maxDistanceKm: data.max_distance_km,
       ageMin: data.age_min,
