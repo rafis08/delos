@@ -32,7 +32,15 @@ export default function Discover() {
   const profiles = useMemo(
     () =>
       profile
-        ? loadedProfiles.filter((candidate) => satisfiesHardRequirements(profile, candidate, prefs))
+        ? loadedProfiles
+            .filter((candidate) => satisfiesHardRequirements(profile, candidate, prefs))
+            .map((candidate, originalIndex) => ({
+              candidate,
+              originalIndex,
+              score: calculateCompatibility(profile, candidate, prefs).score,
+            }))
+            .sort((a, b) => b.score - a.score || a.originalIndex - b.originalIndex)
+            .map(({ candidate }) => candidate)
         : [],
     [loadedProfiles, profile, prefs],
   );
@@ -180,7 +188,7 @@ export default function Discover() {
         </View>
       </MainTabScreen>
     );
-  const c = calculateCompatibility(profile!, p);
+  const c = calculateCompatibility(profile!, p, prefs);
   return (
     <MainTabScreen
       tab="discover"

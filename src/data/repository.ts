@@ -64,7 +64,7 @@ function mapProfile(row: Row): MusicianProfile {
     displayName,
     age: Number(row.age),
     location: String(row.general_location || ''),
-    distanceKm: Number(row.distance_km || 0),
+    distanceKm: row.distance_km == null ? null : Number(row.distance_km),
     bio: String(row.bio || ''),
     primaryInstrument: String(row.primary_instrument || ''),
     secondaryInstruments: unique(
@@ -346,7 +346,7 @@ export class SupabaseRepository implements DelosRepository {
             b.boosted_until && new Date(String(b.boosted_until)) > new Date() ? 1 : 0;
           return bBoosted - aBoosted;
         })
-        .map((item) => ({ ...item, distance_km: distanceById.get(item.user_id) || 0 }))
+        .map((item) => ({ ...item, distance_km: distanceById.get(item.user_id) ?? null }))
         .map(mapProfile)
         .map((profile) => this.withMediaUrls(profile)),
     );

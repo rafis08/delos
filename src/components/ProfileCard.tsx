@@ -51,7 +51,9 @@ export function ProfileCard({
         </Text>
         <View style={styles.meta}>
           <Ionicons name="location-outline" size={16} color={colors.muted} />
-          <Text style={styles.metaText}>{profile.distanceKm} km away</Text>
+          <Text style={styles.metaText}>
+            {profile.distanceKm === null ? profile.location : `${profile.distanceKm} km away`}
+          </Text>
           <Text style={styles.dot}>•</Text>
           <Text style={styles.metaText}>{profile.lastActive}</Text>
         </View>

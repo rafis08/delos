@@ -6,16 +6,21 @@ import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-
 import { AudioSamplePlayer } from '@/components/AudioSamplePlayer';
 import { Button, Chip, Header, IconButton, Screen, StateView } from '@/components/ui';
 import { repository } from '@/data/repository';
-import { calculateCompatibility } from '@/domain/compatibility';
+import {
+  calculateCompatibility,
+  COMPATIBILITY_WEIGHTS,
+  CompatibilityFactor,
+} from '@/domain/compatibility';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
-import { MusicianProfile } from '@/types';
+import { DiscoveryPreferences, MusicianProfile } from '@/types';
 import { TrustSignals } from '@/components/TrustSignals';
 import { profilePhotoUri } from '@/domain/profileMedia';
 export default function FullProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { like, pass, block, profile } = useApp();
   const [remote, setRemote] = useState<MusicianProfile | null>(id === 'me' ? profile : null);
+  const [preferences, setPreferences] = useState<DiscoveryPreferences | null>(null);
   const [loading, setLoading] = useState(id !== 'me');
   useEffect(() => {
     if (id === 'me') {
@@ -27,9 +32,11 @@ export default function FullProfile() {
       setLoading(false);
       return;
     }
-    repository
-      .getProfile(id)
-      .then(setRemote)
+    Promise.all([repository.getProfile(id), repository.getDiscoveryPreferences()])
+      .then(([musician, discoveryPreferences]) => {
+        setRemote(musician);
+        setPreferences(discoveryPreferences);
+      })
       .finally(() => setLoading(false));
   }, [id, profile]);
   if (loading)
@@ -51,11 +58,12 @@ export default function FullProfile() {
   const p = remote;
   const photo = profilePhotoUri(p);
   const performances = p.media.filter((item) => item.type !== 'image');
-  const c = calculateCompatibility(profile, p);
+  const isOwner = id === 'me';
+  const c = isOwner ? null : calculateCompatibility(profile, p, preferences ?? undefined);
   return (
     <Screen>
       <Header
-        eyebrow={`${c.score}% COMPATIBLE`}
+        eyebrow={c ? `${c.score}% MATCH · ${c.label.toUpperCase()}` : 'YOUR MUSICIAN PROFILE'}
         title={`${p.displayName}, ${p.age}`}
         right={
           <View style={styles.headerActions}>
@@ -99,19 +107,22 @@ export default function FullProfile() {
         )}
       </View>
       <Text style={styles.role}>
-        {p.primaryInstrument} · {p.skill} · {p.location} · {p.distanceKm} km
+        {p.primaryInstrument} · {p.skill} · {p.location}
+        {p.distanceKm === null ? '' : ` · ${p.distanceKm} km`}
       </Text>
-      <Text style={styles.explain}>{c.explanation}</Text>
+      {c && <Text style={styles.explain}>{c.explanation}</Text>}
       <TrustSignals profile={p} />
-      {id === 'me' && (
+      {isOwner && (
         <View style={styles.ownerActions}>
           <Button label="Edit profile" onPress={() => router.push('/edit-profile')} />
           <Button label="Manage media" variant="secondary" onPress={() => router.push('/media')} />
         </View>
       )}
-      <Section title="Your chemistry">
-        <CompatibilityBars factors={c.factors} />
-      </Section>
+      {c && (
+        <Section title="Why you match">
+          <CompatibilityBars factors={c.factors} factorDetails={c.factorDetails} />
+        </Section>
+      )}
       <Text style={styles.bio}>{p.bio}</Text>
       <Section title="Sound">
         <View style={styles.chips}>
@@ -191,7 +202,7 @@ export default function FullProfile() {
         />
         <Fact icon="shield-checkmark" label={p.verifiedEmail ? 'Email verified' : 'Unverified'} />
       </View>
-      {id !== 'me' && (
+      {!isOwner && (
         <View style={styles.actions}>
           <View style={{ flex: 1 }}>
             <Button
@@ -234,35 +245,38 @@ function Fact({ icon, label }: { icon: any; label: string }) {
     </View>
   );
 }
-const factorWeights: Record<string, number> = {
-  genre: 25,
-  role: 20,
-  distance: 15,
-  schedule: 15,
-  commitment: 15,
-  goal: 10,
+const factorLabels: Record<CompatibilityFactor, string> = {
+  genre: 'Sound',
+  role: 'Role fit',
+  distance: 'Distance',
+  schedule: 'Schedule',
+  commitment: 'Commitment',
+  goal: 'Goals',
 };
-function CompatibilityBars({ factors }: { factors: Record<string, number> }) {
+function CompatibilityBars({
+  factors,
+  factorDetails,
+}: {
+  factors: Record<CompatibilityFactor, number>;
+  factorDetails: Record<CompatibilityFactor, string>;
+}) {
   return (
     <View style={styles.bars}>
-      {Object.entries(factors).map(([name, score]) => (
-        <View key={name} style={styles.barRow}>
-          <Text style={styles.barLabel}>
-            {name === 'role' ? 'Role fit' : name[0]!.toUpperCase() + name.slice(1)}
-          </Text>
-          <View style={styles.track}>
-            <View
-              style={[
-                styles.fill,
-                { width: `${Math.round((score / factorWeights[name]!) * 100)}%` },
-              ]}
-            />
+      {(Object.keys(COMPATIBILITY_WEIGHTS) as CompatibilityFactor[]).map((name) => {
+        const percent = Math.round((factors[name] / COMPATIBILITY_WEIGHTS[name]) * 100);
+        return (
+          <View key={name} style={styles.barItem}>
+            <View style={styles.barRow}>
+              <Text style={styles.barLabel}>{factorLabels[name]}</Text>
+              <Text style={styles.points}>{percent}%</Text>
+            </View>
+            <View style={styles.track}>
+              <View style={[styles.fill, { width: `${percent}%` }]} />
+            </View>
+            <Text style={styles.barDetail}>{factorDetails[name]}</Text>
           </View>
-          <Text style={styles.points}>
-            {score}/{factorWeights[name]}
-          </Text>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
@@ -270,12 +284,14 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', gap: 6 },
   ownerActions: { gap: 8 },
   link: { color: '#8B5000', fontWeight: '800', paddingVertical: 5 },
-  bars: { gap: 9 },
-  barRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  barLabel: { color: colors.text, width: 82, fontSize: 12, fontWeight: '700' },
-  track: { height: 7, flex: 1, backgroundColor: colors.line, borderRadius: 99, overflow: 'hidden' },
+  bars: { gap: 16 },
+  barItem: { gap: 6 },
+  barRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  barLabel: { color: colors.text, fontSize: 13, fontWeight: '800' },
+  barDetail: { color: colors.muted, fontSize: 12, lineHeight: 17 },
+  track: { height: 7, backgroundColor: colors.line, borderRadius: 99, overflow: 'hidden' },
   fill: { height: 7, backgroundColor: colors.accent, borderRadius: 99 },
-  points: { color: colors.muted, width: 36, textAlign: 'right', fontSize: 11 },
+  points: { color: colors.text, fontSize: 12, fontWeight: '800' },
   hero: {
     height: 340,
     borderRadius: radius.lg,

@@ -18,7 +18,7 @@ export type MusicianProfile = {
   age: number;
   location: string;
   approximateCoordinates?: { latitude: number; longitude: number };
-  distanceKm: number;
+  distanceKm: number | null;
   bio: string;
   primaryInstrument: string;
   secondaryInstruments: string[];
