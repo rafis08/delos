@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { router, usePathname } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
@@ -23,17 +24,38 @@ export function Screen({
   style,
   edges,
   resetScrollKey,
+  navigation = 'auto',
 }: React.PropsWithChildren<{
   scroll?: boolean;
   style?: StyleProp<ViewStyle>;
   edges?: Edge[];
   resetScrollKey?: string | number;
+  navigation?: 'auto' | 'back' | 'close' | 'none';
 }>) {
+  const pathname = usePathname();
   const scrollRef = useRef<ScrollView>(null);
   useEffect(() => {
     if (!scroll) return;
     requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: 0, animated: false }));
   }, [resetScrollKey, scroll]);
+  const primaryRoutes = new Set([
+    '/',
+    '/discover',
+    '/matches',
+    '/messages',
+    '/notifications',
+    '/me',
+    '/onboarding',
+    '/auth/signin',
+    '/auth/confirm',
+  ]);
+  const navigationMode =
+    navigation === 'auto' ? (primaryRoutes.has(pathname) ? 'none' : 'back') : navigation;
+  const leaveScreen = () => {
+    if (router.canGoBack()) router.back();
+    else if (pathname.startsWith('/auth/')) router.replace('/auth/signin');
+    else router.replace('/(tabs)/discover');
+  };
   const content = scroll ? (
     <ScrollView
       ref={scrollRef}
@@ -47,6 +69,27 @@ export function Screen({
   );
   return (
     <SafeAreaView edges={edges} style={styles.safe}>
+      {navigationMode !== 'none' && (
+        <View
+          style={[styles.navigationBar, navigationMode === 'close' && styles.navigationBarClose]}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={navigationMode === 'close' ? 'Close' : 'Back'}
+            accessibilityHint="Returns to the previous screen"
+            hitSlop={8}
+            onPress={leaveScreen}
+            style={({ pressed }) => [styles.navigationButton, pressed && { opacity: 0.55 }]}
+          >
+            <Ionicons
+              name={navigationMode === 'close' ? 'close' : 'chevron-back'}
+              size={navigationMode === 'close' ? 27 : 25}
+              color={colors.text}
+            />
+            {navigationMode === 'back' && <Text style={styles.navigationLabel}>Back</Text>}
+          </Pressable>
+        </View>
+      )}
       {content}
     </SafeAreaView>
   );
@@ -313,6 +356,25 @@ export function StateView({
 }
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.ink },
+  navigationBar: {
+    width: '100%',
+    maxWidth: 760,
+    minHeight: 44,
+    paddingHorizontal: space.lg,
+    alignSelf: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  navigationBarClose: { alignItems: 'flex-end' },
+  navigationButton: {
+    minWidth: 44,
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  navigationLabel: { color: colors.text, fontSize: 16, fontWeight: '700' },
   content: { padding: space.lg, gap: space.lg, width: '100%', maxWidth: 760, alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   eyebrow: {

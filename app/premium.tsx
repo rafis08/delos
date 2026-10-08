@@ -88,7 +88,7 @@ export default function Premium() {
     }
   };
   return (
-    <Screen>
+    <Screen navigation="close">
       <Header
         eyebrow="DELOS AMPLIFIED"
         title={headline[source || ''] || 'Find your people faster.'}

@@ -36,6 +36,7 @@ function RootLayout() {
               headerShown: false,
               contentStyle: { backgroundColor: colors.ink },
               animation: 'slide_from_right',
+              gestureEnabled: true,
             }}
           >
             <Stack.Screen name="(tabs)" options={{ gestureEnabled: false, animation: 'fade' }} />
