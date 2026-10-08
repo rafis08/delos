@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Session } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -45,6 +46,7 @@ type AppState = {
 };
 
 const Context = createContext<AppState | null>(null);
+const hasVerifiedEmail = (session: Session | null) => Boolean(session?.user.email_confirmed_at);
 const defaultSettings: UserSettings = {
   notifications: true,
   discoveryVisible: true,
@@ -117,8 +119,9 @@ export function AppProvider({ children }: React.PropsWithChildren) {
 
   useEffect(() => {
     let active = true;
-    const load = async (id: string | null) => {
+    const load = async (session: Session | null) => {
       if (!active) return;
+      const id = hasVerifiedEmail(session) ? session!.user.id : null;
       setUserId(id);
       if (id && repository) {
         try {
@@ -160,9 +163,9 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         return;
       }
       const { data: sessionData } = await supabase.auth.getSession();
-      await load(sessionData.session?.user.id || null);
+      await load(sessionData.session);
       const { data } = supabase.auth.onAuthStateChange(
-        (_event, session) => void load(session?.user.id || null),
+        (_event, session) => void load(session),
       );
       unsubscribe = () => data.subscription.unsubscribe();
     });
@@ -198,11 +201,15 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         enableSupabaseRepository();
         await AsyncStorage.removeItem('delos:demo');
         setDemoMode(false);
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
           password,
         });
         if (error) throw error;
+        if (!data.user.email_confirmed_at) {
+          await supabase.auth.signOut({ scope: 'local' });
+          throw new Error('Confirm your email before signing in. Check your inbox for the link.');
+        }
       },
       signUp: async (email, password, adultAttested) => {
         if (!supabase) throw new Error('Supabase is not configured.');
@@ -226,7 +233,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         });
         if (error) throw error;
         if (referralCode) await AsyncStorage.removeItem('delos:referral-code');
-        return data.session ? 'confirmed' : 'verify';
+        return data.session && data.user?.email_confirmed_at ? 'confirmed' : 'verify';
       },
       resendVerification: async (email) => {
         if (!supabase) throw new Error('Supabase is not configured.');
