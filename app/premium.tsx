@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, StyleSheet, Text, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Button, Header, Screen } from '@/components/ui';
 import { repository } from '@/data/repository';
 import { billingService } from '@/services/billing';
 import { useApp } from '@/store/AppContext';
 import { colors, radius, space, type } from '@/theme';
+import { LEGAL_BASE_URL } from '@/config/legal';
 const features = [
   ['heart-circle', 'See who liked you', 'Start with musicians who already want to connect.'],
   ['infinite', 'Unlimited likes', 'Keep moving when the right people are in front of you.'],
@@ -231,7 +232,28 @@ export default function Premium() {
           Yes. Manage or cancel it through the same platform where you subscribed.
         </Text>
       </View>
-      <Button label="Privacy & terms" variant="ghost" onPress={() => router.push('/legal')} />
+      <View style={styles.legalRow}>
+        <Text
+          style={styles.legalLink}
+          onPress={() => void Linking.openURL(`${LEGAL_BASE_URL}/terms`)}
+        >
+          Terms of Use
+        </Text>
+        <Text style={styles.legalDot}>·</Text>
+        <Text
+          style={styles.legalLink}
+          onPress={() => void Linking.openURL(`${LEGAL_BASE_URL}/privacy`)}
+        >
+          Privacy Policy
+        </Text>
+        <Text style={styles.legalDot}>·</Text>
+        <Text
+          style={styles.legalLink}
+          onPress={() => void Linking.openURL(`${LEGAL_BASE_URL}/subscription-terms`)}
+        >
+          Subscription Terms
+        </Text>
+      </View>
       <Button label="Maybe later" variant="ghost" onPress={() => router.back()} />
       <Text style={styles.disclaimer}>
         {demoMode
@@ -246,6 +268,9 @@ export default function Premium() {
   );
 }
 const styles = StyleSheet.create({
+  legalRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 7 },
+  legalLink: { color: '#8A5100', fontSize: 12, fontWeight: '800', textDecorationLine: 'underline' },
+  legalDot: { color: colors.muted, fontSize: 12 },
   hero: {
     padding: space.xl,
     backgroundColor: '#FFF6DC',

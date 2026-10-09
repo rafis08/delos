@@ -15,6 +15,7 @@ import { requestPushToken } from '@/services/push';
 import { demoModeEnabled } from '@/config/runtime';
 import { authRedirects } from '@/config/auth';
 import { authLinkRoute, establishSessionFromAuthLink } from '@/domain/authLinks';
+import { PRIVACY_VERSION, TERMS_VERSION } from '@/config/legal';
 
 type AppState = {
   ready: boolean;
@@ -29,7 +30,12 @@ type AppState = {
   demoMode: boolean;
   enterDemo(): Promise<void>;
   signIn(email: string, password: string): Promise<void>;
-  signUp(email: string, password: string, adultAttested: boolean): Promise<'confirmed' | 'verify'>;
+  signUp(
+    email: string,
+    password: string,
+    adultAttested: boolean,
+    legalAccepted: boolean,
+  ): Promise<'confirmed' | 'verify'>;
   resendVerification(email: string): Promise<void>;
   resetPassword(email: string): Promise<void>;
   signOut(): Promise<void>;
@@ -164,9 +170,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
       }
       const { data: sessionData } = await supabase.auth.getSession();
       await load(sessionData.session);
-      const { data } = supabase.auth.onAuthStateChange(
-        (_event, session) => void load(session),
-      );
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => void load(session));
       unsubscribe = () => data.subscription.unsubscribe();
     });
     return () => {
@@ -211,9 +215,11 @@ export function AppProvider({ children }: React.PropsWithChildren) {
           throw new Error('Confirm your email before signing in. Check your inbox for the link.');
         }
       },
-      signUp: async (email, password, adultAttested) => {
+      signUp: async (email, password, adultAttested, legalAccepted) => {
         if (!supabase) throw new Error('Supabase is not configured.');
         if (!adultAttested) throw new Error('You must confirm that you are 18 or older.');
+        if (!legalAccepted) throw new Error('Accept the Terms of Use and Privacy Policy.');
+        const acceptedAt = new Date().toISOString();
         const [referralCode, installId] = await Promise.all([
           AsyncStorage.getItem('delos:referral-code'),
           getInstallId(),
@@ -224,7 +230,11 @@ export function AppProvider({ children }: React.PropsWithChildren) {
           options: {
             emailRedirectTo: authRedirects.confirmEmail,
             data: {
-              adult_attested_at: new Date().toISOString(),
+              adult_attested_at: acceptedAt,
+              terms_accepted_at: acceptedAt,
+              terms_version: TERMS_VERSION,
+              privacy_accepted_at: acceptedAt,
+              privacy_version: PRIVACY_VERSION,
               ...(referralCode
                 ? { referral_code: referralCode, referral_install_id: installId }
                 : {}),

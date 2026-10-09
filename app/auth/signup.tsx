@@ -1,18 +1,20 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 import { Button, Field, Header, Screen } from '@/components/ui';
 import { BrandLockup } from '@/components/BrandMark';
 import { signUpSchema } from '@/domain/validation';
 import { useApp } from '@/store/AppContext';
 import { colors } from '@/theme';
 import { friendlyAuthError } from '@/domain/authMessages';
+import { LEGAL_BASE_URL } from '@/config/legal';
 export default function SignUp() {
   const { signUp } = useApp();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [adultAttested, setAdultAttested] = useState(false);
+  const [legalAccepted, setLegalAccepted] = useState(false);
   const [error, setError] = useState('');
   const submit = async () => {
     const v = signUpSchema.safeParse({ email, password });
@@ -23,7 +25,8 @@ export default function SignUp() {
     try {
       setLoading(true);
       if (!adultAttested) return setError('Confirm that you are 18 or older.');
-      const result = await signUp(email, password, adultAttested);
+      if (!legalAccepted) return setError('Accept the Terms of Use and Privacy Policy.');
+      const result = await signUp(email, password, adultAttested, legalAccepted);
       if (result === 'verify')
         router.replace({ pathname: '/auth/check-email', params: { email: email.trim() } });
       else router.replace('/onboarding');
@@ -56,6 +59,27 @@ export default function SignUp() {
         variant="secondary"
         onPress={() => setAdultAttested((value) => !value)}
       />
+      <Button
+        label={legalAccepted ? 'Terms & privacy accepted' : 'Accept Terms & Privacy Policy'}
+        icon={legalAccepted ? 'checkmark-circle' : 'ellipse-outline'}
+        variant="secondary"
+        onPress={() => setLegalAccepted((value) => !value)}
+      />
+      <View style={styles.legalLinks}>
+        <Text
+          style={styles.legalLink}
+          onPress={() => void Linking.openURL(`${LEGAL_BASE_URL}/terms`)}
+        >
+          Read Terms
+        </Text>
+        <Text style={styles.secondary}>·</Text>
+        <Text
+          style={styles.legalLink}
+          onPress={() => void Linking.openURL(`${LEGAL_BASE_URL}/privacy`)}
+        >
+          Read Privacy Policy
+        </Text>
+      </View>
       <Field
         label="Password"
         value={password}
@@ -70,7 +94,7 @@ export default function SignUp() {
       {!!error && <Text style={styles.error}>{error}</Text>}
       <Button
         label={loading ? 'Creating account…' : 'Create account'}
-        disabled={loading || !adultAttested}
+        disabled={loading || !adultAttested || !legalAccepted}
         onPress={submit}
       />
       <Text style={styles.disclosure}>
@@ -94,4 +118,6 @@ const styles = StyleSheet.create({
   signInRow: { flexDirection: 'row', justifyContent: 'center', gap: 5 },
   secondary: { color: colors.muted },
   link: { color: '#8A5100', fontWeight: '900' },
+  legalLinks: { flexDirection: 'row', justifyContent: 'center', gap: 8, flexWrap: 'wrap' },
+  legalLink: { color: '#8A5100', fontWeight: '800', textDecorationLine: 'underline' },
 });

@@ -1,6 +1,7 @@
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import { Button, Header, Screen } from '@/components/ui';
 import { colors, space, type } from '@/theme';
+import { LEGAL_BASE_URL } from '@/config/legal';
 export default function Legal() {
   return (
     <Screen>
@@ -25,6 +26,11 @@ export default function Legal() {
         />
         <Button label="Terms of Use" variant="secondary" onPress={() => openLegalPage('/terms')} />
         <Button
+          label="Subscription Terms"
+          variant="secondary"
+          onPress={() => openLegalPage('/subscription-terms')}
+        />
+        <Button
           label="Community Guidelines"
           variant="secondary"
           onPress={() => openLegalPage('/community')}
@@ -45,7 +51,7 @@ export default function Legal() {
   );
 }
 function openLegalPage(path: string) {
-  void Linking.openURL(`https://delosmusic.app${path}`);
+  void Linking.openURL(`${LEGAL_BASE_URL}${path}`);
 }
 function Section({ title, body }: { title: string; body: string }) {
   return (
