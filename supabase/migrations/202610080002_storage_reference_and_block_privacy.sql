@@ -73,6 +73,10 @@ $$;
 drop policy if exists "profile child read media_samples" on public.media_samples;
 drop policy if exists "profile child own media_samples" on public.media_samples;
 drop policy if exists "members insert own media samples" on public.media_samples;
+drop policy if exists "members read authorized media samples" on public.media_samples;
+drop policy if exists "members insert owned media samples" on public.media_samples;
+drop policy if exists "members update owned media samples" on public.media_samples;
+drop policy if exists "members delete owned media samples" on public.media_samples;
 create policy "members read authorized media samples" on public.media_samples
 for select to authenticated using (
   profile_id = auth.uid()
@@ -98,6 +102,7 @@ create policy "members delete owned media samples" on public.media_samples
 for delete to authenticated using (profile_id = auth.uid());
 
 drop policy if exists "members read active band calls" on public.band_calls;
+drop policy if exists "members read unblocked active band calls" on public.band_calls;
 create policy "members read unblocked active band calls" on public.band_calls
 for select to authenticated using (
   creator_id = auth.uid()
@@ -105,6 +110,9 @@ for select to authenticated using (
 );
 
 drop policy if exists "own shortlist" on public.saved_profiles;
+drop policy if exists "members read own shortlist" on public.saved_profiles;
+drop policy if exists "members add unblocked profiles to shortlist" on public.saved_profiles;
+drop policy if exists "members remove own shortlist entries" on public.saved_profiles;
 create policy "members read own shortlist" on public.saved_profiles
 for select to authenticated using (user_id = auth.uid());
 create policy "members add unblocked profiles to shortlist" on public.saved_profiles
