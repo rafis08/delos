@@ -60,7 +60,8 @@
       "bundleIdentifier": "com.delos-music.app",
       "associatedDomains": ["applinks:delosmusic.app"],
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMotionUsageDescription": "Delos Music may access device motion only to support media and interface functionality. Motion data is not used for advertising."
       },
       "privacyManifests": {
         "NSPrivacyTracking": false,

@@ -53,6 +53,8 @@
 	<string>Delos Music can add an accepted rehearsal or audition to your calendar when you choose.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Delos uses an approximate location to calculate musician distance. Your precise location is never shown publicly.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Delos Music may access device motion only to support media and interface functionality. Motion data is not used for advertising.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Delos lets you choose musician profile photos that other signed-in members can see.</string>
 	<key>NSUserActivityTypes</key>
