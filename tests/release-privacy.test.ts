@@ -44,6 +44,8 @@ describe('release privacy and legal boundaries', () => {
     expect(privacyManifest).toContain('NSPrivacyCollectedDataTypeEmailAddress');
     expect(privacyManifest).toContain('NSPrivacyCollectedDataTypeCoarseLocation');
     expect(privacyManifest).toContain('NSPrivacyCollectedDataTypeOtherUserContent');
+    expect(privacyManifest).toContain('NSPrivacyCollectedDataTypeEmailsOrTextMessages');
+    expect(privacyManifest).toContain('NSPrivacyCollectedDataTypeCustomerSupport');
     expect(privacyManifest).toContain('<key>NSPrivacyTracking</key>');
     expect(privacyManifest).toContain('<false/>');
   });
