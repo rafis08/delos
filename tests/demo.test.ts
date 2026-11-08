@@ -25,6 +25,17 @@ describe('isolated demo mode', () => {
     expect(await repository.listBandCalls()).toHaveLength(3);
   });
 
+  it('unlocks all premium tools for the authenticated App Review demo account', async () => {
+    const repository = new DemoRepository();
+    expect(await repository.getSubscriptionTier()).toBe('amplified');
+    expect(await repository.getLikeAllowance()).toEqual({
+      tier: 'amplified',
+      used: 0,
+      limit: null,
+      remaining: null,
+    });
+  });
+
   it('keeps shared rehearsal prep in the Band Room', async () => {
     const repository = new DemoRepository();
     const item = await repository.addCollaborationItem(

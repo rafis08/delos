@@ -25,7 +25,8 @@ export default function SignUp() {
     try {
       setLoading(true);
       if (!adultAttested) return setError('Confirm that you are 18 or older.');
-      if (!legalAccepted) return setError('Accept the Terms of Use and Privacy Policy.');
+      if (!legalAccepted)
+        return setError('Accept the Terms, Privacy Policy, and Community Guidelines.');
       const result = await signUp(email, password, adultAttested, legalAccepted);
       if (result === 'verify')
         router.replace({ pathname: '/auth/check-email', params: { email: email.trim() } });
@@ -60,7 +61,11 @@ export default function SignUp() {
         onPress={() => setAdultAttested((value) => !value)}
       />
       <Button
-        label={legalAccepted ? 'Terms & privacy accepted' : 'Accept Terms & Privacy Policy'}
+        label={
+          legalAccepted
+            ? 'Terms, privacy & community rules accepted'
+            : 'Accept Terms, Privacy & Community Rules'
+        }
         icon={legalAccepted ? 'checkmark-circle' : 'ellipse-outline'}
         variant="secondary"
         onPress={() => setLegalAccepted((value) => !value)}
@@ -79,7 +84,18 @@ export default function SignUp() {
         >
           Read Privacy Policy
         </Text>
+        <Text style={styles.secondary}>·</Text>
+        <Text
+          style={styles.legalLink}
+          onPress={() => void Linking.openURL(`${LEGAL_BASE_URL}/community`)}
+        >
+          Community Guidelines
+        </Text>
       </View>
+      <Text style={styles.safetyNotice}>
+        Delos has zero tolerance for objectionable content or abusive users. Confirmed violations
+        may result in immediate content removal and account termination.
+      </Text>
       <Field
         label="Password"
         value={password}
@@ -120,4 +136,5 @@ const styles = StyleSheet.create({
   link: { color: '#8A5100', fontWeight: '900' },
   legalLinks: { flexDirection: 'row', justifyContent: 'center', gap: 8, flexWrap: 'wrap' },
   legalLink: { color: '#8A5100', fontWeight: '800', textDecorationLine: 'underline' },
+  safetyNotice: { color: colors.muted, fontSize: 12, lineHeight: 17, textAlign: 'center' },
 });

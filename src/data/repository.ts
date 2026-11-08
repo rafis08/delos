@@ -456,6 +456,12 @@ export class SupabaseRepository implements DelosRepository {
     return { ...input, id: data.id, status: data.status };
   }
   async block(targetId: string) {
+    const { error: reportError } = await this.client.rpc('submit_report_rate_limited', {
+      target_user_id: targetId,
+      report_reason: 'Member blocked',
+      report_details: 'Automatic safety notice created when a member blocked this account.',
+    });
+    if (reportError) throw reportError;
     const { error } = await this.client.from('blocks').insert({
       blocker_id: (await this.client.auth.getUser()).data.user?.id,
       blocked_id: targetId,

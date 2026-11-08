@@ -309,10 +309,10 @@ export class DemoRepository {
     this.blocked.delete(targetId);
   }
   async getSubscriptionTier() {
-    return 'free' as const;
+    return 'amplified' as const;
   }
   async getLikeAllowance() {
-    return { tier: 'free' as const, used: 4, limit: 15, remaining: 11 };
+    return { tier: 'amplified' as const, used: 0, limit: null, remaining: null };
   }
   async listProfilesWhoLikedMe() {
     return demoProfiles.slice(2, 6);

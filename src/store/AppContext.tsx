@@ -16,6 +16,7 @@ import { demoModeEnabled } from '@/config/runtime';
 import { authRedirects } from '@/config/auth';
 import { authLinkRoute, establishSessionFromAuthLink } from '@/domain/authLinks';
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/config/legal';
+import { isAppReviewAccount } from '@/config/appReview';
 
 type AppState = {
   ready: boolean;
@@ -29,7 +30,7 @@ type AppState = {
   settings: UserSettings;
   demoMode: boolean;
   enterDemo(): Promise<void>;
-  signIn(email: string, password: string): Promise<void>;
+  signIn(email: string, password: string, legalAccepted: boolean): Promise<void>;
   signUp(
     email: string,
     password: string,
@@ -128,6 +129,17 @@ export function AppProvider({ children }: React.PropsWithChildren) {
     const load = async (session: Session | null) => {
       if (!active) return;
       const id = hasVerifiedEmail(session) ? session!.user.id : null;
+      if (id && isAppReviewAccount(session?.user.email)) {
+        enableDemoRepository();
+        setDemoMode(true);
+        setUserId('me');
+        setProfile(demoUser);
+        setNotifications(await needRepo().listNotifications());
+        setReady(true);
+        return;
+      }
+      enableSupabaseRepository();
+      setDemoMode(false);
       setUserId(id);
       if (id && repository) {
         try {
@@ -200,8 +212,10 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         setProfile(demoUser);
         setNotifications(await needRepo().listNotifications());
       },
-      signIn: async (email, password) => {
+      signIn: async (email, password, legalAccepted) => {
         if (!supabase) throw new Error('Supabase is not configured.');
+        if (!legalAccepted)
+          throw new Error('Accept the Terms of Use and Community Guidelines before signing in.');
         enableSupabaseRepository();
         await AsyncStorage.removeItem('delos:demo');
         setDemoMode(false);
@@ -213,6 +227,13 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         if (!data.user.email_confirmed_at) {
           await supabase.auth.signOut({ scope: 'local' });
           throw new Error('Confirm your email before signing in. Check your inbox for the link.');
+        }
+        if (isAppReviewAccount(data.user.email)) {
+          enableDemoRepository();
+          setDemoMode(true);
+          setUserId('me');
+          setProfile(demoUser);
+          setNotifications(await needRepo().listNotifications());
         }
       },
       signUp: async (email, password, adultAttested, legalAccepted) => {
@@ -262,8 +283,8 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         if (error) throw error;
       },
       signOut: async () => {
-        if (demoMode) await AsyncStorage.removeItem('delos:demo');
-        else if (supabase) await supabase.auth.signOut();
+        await AsyncStorage.removeItem('delos:demo');
+        if (supabase) await supabase.auth.signOut({ scope: 'local' });
         enableSupabaseRepository();
         setDemoMode(false);
         setUserId(null);
@@ -303,7 +324,7 @@ export function AppProvider({ children }: React.PropsWithChildren) {
           AsyncStorage.removeItem('delos:demo'),
           AsyncStorage.removeItem('delos:settings'),
         ]);
-        if (!demoMode) await supabase?.auth.signOut({ scope: 'local' });
+        await supabase?.auth.signOut({ scope: 'local' });
         enableSupabaseRepository();
         setDemoMode(false);
         setUserId(null);
