@@ -30,7 +30,7 @@ type AppState = {
   settings: UserSettings;
   demoMode: boolean;
   enterDemo(): Promise<void>;
-  signIn(email: string, password: string, legalAccepted: boolean): Promise<void>;
+  signIn(email: string, password: string): Promise<void>;
   signUp(
     email: string,
     password: string,
@@ -212,10 +212,8 @@ export function AppProvider({ children }: React.PropsWithChildren) {
         setProfile(demoUser);
         setNotifications(await needRepo().listNotifications());
       },
-      signIn: async (email, password, legalAccepted) => {
+      signIn: async (email, password) => {
         if (!supabase) throw new Error('Supabase is not configured.');
-        if (!legalAccepted)
-          throw new Error('Accept the Terms of Use and Community Guidelines before signing in.');
         enableSupabaseRepository();
         await AsyncStorage.removeItem('delos:demo');
         setDemoMode(false);

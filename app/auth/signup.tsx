@@ -60,16 +60,6 @@ export default function SignUp() {
         variant="secondary"
         onPress={() => setAdultAttested((value) => !value)}
       />
-      <Button
-        label={
-          legalAccepted
-            ? 'Terms, privacy & community rules accepted'
-            : 'Accept Terms, Privacy & Community Rules'
-        }
-        icon={legalAccepted ? 'checkmark-circle' : 'ellipse-outline'}
-        variant="secondary"
-        onPress={() => setLegalAccepted((value) => !value)}
-      />
       <View style={styles.legalLinks}>
         <Text
           style={styles.legalLink}
@@ -96,6 +86,16 @@ export default function SignUp() {
         Delos has zero tolerance for objectionable content or abusive users. Confirmed violations
         may result in immediate content removal and account termination.
       </Text>
+      <Button
+        label={
+          legalAccepted
+            ? 'Terms, privacy & community rules accepted'
+            : 'I agree to the Terms, Privacy Policy & Community Rules'
+        }
+        icon={legalAccepted ? 'checkmark-circle' : 'ellipse-outline'}
+        variant="secondary"
+        onPress={() => setLegalAccepted((value) => !value)}
+      />
       <Field
         label="Password"
         value={password}

@@ -22,4 +22,13 @@ describe('App Review access and safety', () => {
     expect(plist).not.toContain('<string>audio</string>');
     expect(config).toContain('"enableBackgroundPlayback": false');
   });
+
+  it('presents legal documents before acceptance during account creation only', () => {
+    const signIn = readFileSync('app/auth/signin.tsx', 'utf8');
+    const signUp = readFileSync('app/auth/signup.tsx', 'utf8');
+    expect(signIn).not.toContain('legalAccepted');
+    expect(signUp.indexOf('<View style={styles.legalLinks}>')).toBeLessThan(
+      signUp.indexOf("onPress={() => setLegalAccepted"),
+    );
+  });
 });
